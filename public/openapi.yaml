@@ -1,0 +1,260 @@
+openapi: 3.0.0
+info:
+  title: OutreachOS Lead Management API
+  description: |
+    OutreachOS API for automated lead management and deduplication.
+
+    This API allows ChatGPT agents to submit lead data collected from Google Maps
+    and other sources. The system automatically handles deduplication based on
+    Google Maps URLs and provides comprehensive lead management capabilities.
+
+    ## Authentication
+    All requests must include the `X-Agent-Secret` header with a valid secret key,
+    or a `Authorization: Bearer <api-key>` header for programmatic access.
+
+    ## Rate Limiting
+    - 100 requests per minute per agent (X-Agent-Secret)
+    - 1000 requests per minute for API key users
+
+    ## Error Handling
+    The API uses conventional HTTP response codes and returns detailed error
+    information in JSON format for debugging and retry logic.
+  version: 1.0.0
+  contact:
+    name: OutreachOS API Support
+    email: support@outreachos.local
+
+servers:
+  - url: https://your-domain.vercel.app
+    description: Production server
+  - url: http://localhost:3000
+    description: Development server
+
+paths:
+  /api/agent/leads:
+    post:
+      operationId: submitLead
+      summary: Submit a new lead to the database
+      description: |
+        Submit lead information collected from Google Maps or other sources.
+        The system will automatically deduplicate based on the Google Maps URL.
+
+        If a lead with the same maps_url already exists, the API will return
+        a 200 OK response with `skipped: true` to prevent the agent loop from
+        breaking due to duplicate errors.
+      security:
+        - AgentSecret: []
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeadSubmission'
+            examples:
+              interior_design:
+                summary: Interior Design Business
+                value:
+                  lead:
+                    name: Modern Interior Studio
+                    niche: Interior Design
+                    country: United States
+                    phone: +1-555-0123
+                    address: 123 Design Ave, New York, NY 10001
+                    maps_url: https://maps.google.com/place?cid=123456789
+                  metadata:
+                    source: chatgpt
+                    version: "1.0"
+      responses:
+        '200':
+          description: Lead already exists (duplicate detected)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '201':
+          description: Lead created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateResponse'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RateLimitResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/health:
+    get:
+      operationId: healthCheck
+      summary: Check API health status
+      description: Returns the current health status of the API and its dependencies
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: API is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+components:
+  schemas:
+    LeadSubmission:
+      type: object
+      required:
+        - lead
+      properties:
+        lead:
+          $ref: '#/components/schemas/Lead'
+        metadata:
+          $ref: '#/components/schemas/RequestMetadata'
+
+    Lead:
+      type: object
+      required:
+        - name
+        - niche
+        - country
+        - maps_url
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        niche:
+          type: string
+          minLength: 1
+          maxLength: 100
+        country:
+          type: string
+          minLength: 1
+          maxLength: 100
+        phone:
+          type: string
+          maxLength: 50
+          nullable: true
+        address:
+          type: string
+          maxLength: 500
+          nullable: true
+        maps_url:
+          type: string
+          format: uri
+          maxLength: 2000
+
+    RequestMetadata:
+      type: object
+      properties:
+        source:
+          type: string
+          default: chatgpt
+        version:
+          type: string
+          default: "1.0"
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        skipped:
+          type: boolean
+        requestId:
+          type: string
+          format: uuid
+        responseTime:
+          type: number
+
+    CreateResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                id:
+                  type: integer
+                created_at:
+                  type: string
+                  format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
+        requestId:
+          type: string
+          format: uuid
+
+    RateLimitResponse:
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+        - type: object
+          properties:
+            retryAfter:
+              type: number
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy, error]
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+        uptime:
+          type: number
+        responseTime:
+          type: number
+        checks:
+          type: object
+
+  securitySchemes:
+    AgentSecret:
+      type: apiKey
+      in: header
+      name: X-Agent-Secret
+      description: Secret key for ChatGPT agent authentication
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: API key for programmatic access

@@ -1,0 +1,67 @@
+/** @type {import('jest').Config} */
+module.exports = {
+  testEnvironment: 'jsdom',
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  moduleNameMapper: {
+    '^@/lib/(.*)$': '<rootDir>/lib/$1',
+    '^@/types/(.*)$': '<rootDir>/types/$1',
+    '^@/components/(.*)$': '<rootDir>/components/$1',
+    '^@/__tests__/(.*)$': '<rootDir>/__tests__/$1',
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
+  testMatch: [
+    '**/__tests__/**/*.(test|spec).(ts|tsx|js|jsx)',
+    '**/*.(test|spec).(ts|tsx|js|jsx)',
+  ],
+  collectCoverage: true,
+  collectCoverageFrom: [
+    'lib/**/*.{ts,tsx}',
+    'components/**/*.{ts,tsx}',
+    'src/app/api/**/*.{ts,tsx}',
+    '!**/*.d.ts',
+    '!**/node_modules/**',
+    '!**/.next/**',
+    '!middleware.ts',
+    '!components/ui/**',
+    '!components/**/index.ts',
+    '!components/design-tokens.ts',
+    '!components/dashboard/DashboardClient.tsx',
+    '!components/providers.tsx',
+    '!lib/hooks/useAuth.tsx',
+    '!lib/supabase/browser.ts',
+    '!lib/supabase/middleware.ts',
+    '!lib/supabase/server.ts',
+    '!lib/auth/session-security.ts',
+    '!lib/db/migration-validator.ts',
+    '!components/auth/UserMenu.tsx',
+    '!components/auth/MFASetup.tsx',
+    '!components/auth/PasswordResetForm.tsx',
+    '!components/auth/LoginForm.tsx',
+    '!components/auth/RouteGuard.tsx',
+  ],
+  coverageReporters: ['text', 'lcov', 'html'],
+  coverageThreshold: {
+    global: {
+      branches: 85,
+      functions: 85,
+      lines: 85,
+      statements: 85,
+    },
+  },
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
+  transform: {
+    '^.+\\.(ts|tsx)$': [
+      'ts-jest',
+      {
+        tsconfig: 'tsconfig.json',
+      },
+    ],
+  },
+  transformIgnorePatterns: [
+    '/node_modules/(?!(lru-cache|isomorphic-dompurify|otpauth|@noble|qrcode)/)',
+  ],
+  testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/.next/', '<rootDir>/playwright/'],
+  clearMocks: true,
+  resetMocks: false,
+  restoreMocks: false,
+};

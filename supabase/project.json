@@ -1,0 +1,10 @@
+{
+  "projectName": "outreachos",
+  "projectRef": "qowwnchhyjnfovxcjiqw",
+  "organization": "Techxtreme Digital Studio",
+  "region": "ap-south-1",
+  "isolatedFrom": ["project-ap-i", "qmomnqrrufmoyobdmdzf"],
+  "dashboardUrl": "https://supabase.com/dashboard/project/qowwnchhyjnfovxcjiqw",
+  "apiKeysUrl": "https://supabase.com/dashboard/project/qowwnchhyjnfovxcjiqw/settings/api-keys",
+  "notes": "This Supabase project is dedicated to OutreachOS only. Do not reuse keys from other projects."
+}
