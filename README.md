@@ -89,6 +89,16 @@ ChatGPT agent / Excel upload  →  Next.js API  →  Supabase (leads)
 
 
 
+## Acknowledgments
+
+Parts of this codebase were written and iterated with **[Cursor](https://cursor.com)**, an AI-assisted editor. Cursor was used for scaffolding, debugging, writing tests, and shipping the dashboard and import flow. Product decisions, architecture tradeoffs, deployment choices, and final review remain mine.
+
+The product also integrates with a ChatGPT Custom GPT for automated lead intake through the secured agent API.
+
+---
+
+
+
 ## Prerequisites
 
 1. **Node.js 18+** and npm  
