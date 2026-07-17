@@ -13,6 +13,8 @@ export interface LeadsQueryParams {
   pageSize?: number;
   /** When set, only these lead IDs are visible (demo showcase). */
   allowedLeadIds?: number[];
+  /** Scope results to a single owner's personal pool. */
+  ownerId?: string;
 }
 
 export interface LeadsQueryResult {
@@ -69,12 +71,14 @@ export class LeadSearchService {
   static async fuzzySearch(
     supabase: SupabaseClient<Database>,
     term: string,
-    threshold = FUZZY_SIMILARITY_THRESHOLD
+    threshold = FUZZY_SIMILARITY_THRESHOLD,
+    ownerId?: string
   ): Promise<Lead[]> {
     const { data, error } = await supabase.rpc('search_leads_fuzzy', {
       search_term: term,
       sim_threshold: threshold,
       result_limit: 50,
+      p_owner_id: ownerId ?? null,
     });
 
     if (error) {
@@ -99,6 +103,7 @@ export class LeadSearchService {
       p_end_date: params.endDate ?? null,
       p_page: page,
       p_page_size: pageSize,
+      p_owner_id: params.ownerId ?? null,
     });
 
     if (error) {
@@ -131,6 +136,10 @@ export class LeadSearchService {
     pageSize: number
   ): Promise<LeadsQueryResult> {
     let query = supabase.from('leads').select('*', { count: 'exact' });
+
+    if (params.ownerId) {
+      query = query.eq('owner_id', params.ownerId);
+    }
 
     if (params.allowedLeadIds) {
       if (params.allowedLeadIds.length === 0) {

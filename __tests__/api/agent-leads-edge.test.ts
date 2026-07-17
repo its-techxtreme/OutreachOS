@@ -5,6 +5,9 @@ import { getRateLimiterForAuth, rateLimiters } from '@/lib/rate-limiter';
 import { MAX_REQUEST_BODY_BYTES } from '@/lib/api-helpers';
 
 jest.mock('@/lib/leads', () => ({ submitLead: jest.fn() }));
+jest.mock('@/lib/auth/agent-owner', () => ({
+  resolveAgentLeadOwnerId: jest.fn().mockResolvedValue('admin-owner-id'),
+}));
 jest.mock('@/lib/rate-limiter', () => {
   const actual = jest.requireActual('@/lib/rate-limiter');
   return {

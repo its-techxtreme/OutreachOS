@@ -75,13 +75,13 @@ export function PasswordResetForm({ mode = 'request' }: PasswordResetFormProps) 
   const displayError = localError || error;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-950 px-4">
-      <div className="w-full max-w-md rounded-lg border border-zinc-800 bg-zinc-900 p-8 shadow-xl">
+    <div className="flex min-h-screen items-center justify-center bg-paper px-4">
+      <div className="w-full max-w-md rounded-lg border border-ink bg-paper-deep p-8 shadow-xl">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-zinc-100">
+          <h1 className="text-2xl font-bold text-ink">
             {mode === 'request' ? 'Reset password' : 'Set new password'}
           </h1>
-          <p className="mt-2 text-sm text-zinc-400">
+          <p className="mt-2 text-sm text-ink-muted">
             {mode === 'request'
               ? 'Enter your email to receive a password reset link'
               : 'Choose a strong password for your account'}
@@ -115,7 +115,7 @@ export function PasswordResetForm({ mode = 'request' }: PasswordResetFormProps) 
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                className="border-zinc-700 bg-zinc-800 text-zinc-100"
+                className="border-ink bg-paper-deep text-ink"
                 required
               />
             </div>
@@ -132,7 +132,7 @@ export function PasswordResetForm({ mode = 'request' }: PasswordResetFormProps) 
                 type="password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                className="border-zinc-700 bg-zinc-800 text-zinc-100"
+                className="border-ink bg-paper-deep text-ink"
                 required
               />
             </div>
@@ -143,7 +143,7 @@ export function PasswordResetForm({ mode = 'request' }: PasswordResetFormProps) 
                 type="password"
                 value={confirmPassword}
                 onChange={(event) => setConfirmPassword(event.target.value)}
-                className="border-zinc-700 bg-zinc-800 text-zinc-100"
+                className="border-ink bg-paper-deep text-ink"
                 required
               />
             </div>
@@ -153,10 +153,10 @@ export function PasswordResetForm({ mode = 'request' }: PasswordResetFormProps) 
           </form>
         )}
 
-        <p className="mt-4 text-center text-sm text-zinc-400">
+        <p className="mt-4 text-center text-sm text-ink-muted">
           <Link
             href="/auth/login"
-            className="text-indigo-400 hover:text-indigo-300"
+            className="text-marker hover:text-indigo-300"
           >
             Back to sign in
           </Link>

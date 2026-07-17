@@ -2,6 +2,9 @@ import { POST, OPTIONS } from '@/app/api/agent/leads/route';
 import { submitLead } from '@/lib/leads';
 
 jest.mock('@/lib/leads', () => ({ submitLead: jest.fn() }));
+jest.mock('@/lib/auth/agent-owner', () => ({
+  resolveAgentLeadOwnerId: jest.fn().mockResolvedValue('admin-owner-id'),
+}));
 jest.mock('@/lib/rate-limiter', () => ({
   rateLimiters: {
     agent: { check: jest.fn() },

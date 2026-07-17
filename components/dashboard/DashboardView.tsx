@@ -9,6 +9,7 @@ import { GlobalMetricsPanel } from '@/components/dashboard/GlobalMetricsPanel';
 import { PaginationControls } from '@/components/dashboard/PaginationControls';
 import { ProspectMatrixTable } from '@/components/dashboard/ProspectMatrixTable';
 import { VectorVaultView } from '@/components/dashboard/VectorVaultView';
+import { MascotCallout } from '@/components/mascots/MascotCallout';
 import { Button } from '@/components/ui/button';
 import { Permission } from '@/lib/auth/rbac';
 import { useComputedMetrics } from '@/lib/hooks/useComputedMetrics';
@@ -130,18 +131,7 @@ export function DashboardView() {
   const isVectorView = viewMode === 'vector';
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden">
-      <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/brand/constellation-field.png"
-          alt=""
-          className="h-full w-full object-cover opacity-25 mix-blend-screen"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/50 via-zinc-950/85 to-zinc-950" />
-        <div className="ops-grid absolute inset-0 opacity-[0.025]" />
-      </div>
-
+    <div className="paper-texture relative min-h-screen overflow-x-hidden">
       <main
         role="main"
         aria-label="Lead Management Dashboard"
@@ -152,22 +142,16 @@ export function DashboardView() {
             : 'relative mx-auto flex w-full max-w-7xl flex-col gap-6 p-6'
         }
       >
-        <header className="flex items-start justify-between gap-4 rounded-xl border border-zinc-800/60 bg-zinc-950/70 px-4 py-3 backdrop-blur-md md:px-5">
+        <header className="doodle-border flex items-start justify-between gap-4 bg-paper px-4 py-3 md:px-5">
           <div className="flex items-center gap-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/brand/outreachos-mark.png"
-              alt=""
-              className="h-9 w-9 object-contain"
-            />
             <div>
-              <h1 className="font-display text-xl font-bold tracking-tight text-teal-400 md:text-2xl">
-                OutreachOS
+              <h1 className="font-display text-3xl font-bold tracking-tight text-ink md:text-4xl">
+                Outreach<span className="text-marker">OS</span>
               </h1>
-              <p className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-zinc-500 md:text-xs md:normal-case md:tracking-normal md:text-zinc-400">
+              <p className="mt-0.5 font-label text-[10px] font-medium uppercase tracking-[0.16em] text-ink-muted md:text-xs">
                 {isVectorView
                   ? 'Vector vault — niche & country relationships'
-                  : 'Lead management and outreach dashboard'}
+                  : 'Your personal lead sketchbook'}
               </p>
             </div>
           </div>
@@ -182,7 +166,7 @@ export function DashboardView() {
                   current === 'table' ? 'vector' : 'table'
                 )
               }
-              className="border-zinc-700 text-zinc-200"
+              className="doodle-btn border-ink bg-paper text-ink"
             >
               {isVectorView ? (
                 <>
@@ -203,9 +187,18 @@ export function DashboardView() {
         {error && (
           <div
             role="alert"
-            className="rounded-lg border border-red-800 bg-red-950/50 px-4 py-3 text-sm text-red-300"
+            className="doodle-border-soft border-danger bg-paper-deep px-4 py-3 text-sm text-danger"
           >
             {error}
+          </div>
+        )}
+
+        {!loading && !error && leads.length === 0 && !isVectorView && (
+          <div data-testid="empty-leads-state">
+            <MascotCallout mascot="adventurer" title="Blank page — for now">
+              Your vault is empty. Import an Excel file or wait for agent
+              submissions to start filling this sketchbook.
+            </MascotCallout>
           </div>
         )}
 
@@ -216,7 +209,7 @@ export function DashboardView() {
             {filterOptionsError && (
               <div
                 role="alert"
-                className="rounded-lg border border-amber-800 bg-amber-950/50 px-4 py-3 text-sm text-amber-300"
+                className="doodle-border-soft border-coral bg-paper-deep px-4 py-3 text-sm text-ink"
               >
                 Filter options unavailable: {filterOptionsError}
               </div>
@@ -225,7 +218,7 @@ export function DashboardView() {
             {exportError && (
               <div
                 role="alert"
-                className="rounded-lg border border-amber-800 bg-amber-950/50 px-4 py-3 text-sm text-amber-300"
+                className="doodle-border-soft border-coral bg-paper-deep px-4 py-3 text-sm text-ink"
               >
                 Export failed: {exportError}
               </div>
@@ -234,7 +227,7 @@ export function DashboardView() {
             {importError && (
               <div
                 role="alert"
-                className="rounded-lg border border-rose-800 bg-rose-950/50 px-4 py-3 text-sm text-rose-300"
+                className="doodle-border-soft border-danger bg-paper-deep px-4 py-3 text-sm text-danger"
               >
                 Import failed: {importError}
                 <button
@@ -250,7 +243,7 @@ export function DashboardView() {
             {importResult && !importError && (
               <div
                 role="status"
-                className="rounded-lg border border-teal-800 bg-teal-950/40 px-4 py-3 text-sm text-teal-200"
+                className="doodle-border-soft border-marker bg-marker/10 px-4 py-3 text-sm text-ink"
               >
                 Imported {importResult.summary.created} new lead
                 {importResult.summary.created === 1 ? '' : 's'}

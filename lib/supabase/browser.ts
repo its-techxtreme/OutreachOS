@@ -29,7 +29,14 @@ export function createBrowserSupabaseClient() {
             persistSession: false,
           },
         })
-      : createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);
+      : createBrowserClient<Database>(supabaseUrl, supabaseAnonKey, {
+          auth: {
+            // Single owner of refresh — do not add a second refresh loop.
+            autoRefreshToken: true,
+            persistSession: true,
+            detectSessionInUrl: true,
+          },
+        });
 
   return browserClient;
 }

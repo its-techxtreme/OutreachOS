@@ -258,34 +258,28 @@ export function VectorVaultView({ leads, isLoading = false }: VectorVaultViewPro
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, width, height);
 
-      const gradient = ctx.createRadialGradient(
-        width * 0.5,
-        height * 0.45,
-        20,
-        width * 0.5,
-        height * 0.5,
-        Math.max(width, height) * 0.72
-      );
-      gradient.addColorStop(0, '#18181b');
-      gradient.addColorStop(1, '#09090b');
+      const gradient = ctx.createLinearGradient(0, 0, 0, height);
+      gradient.addColorStop(0, '#fffdf7');
+      gradient.addColorStop(1, '#f3ede0');
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, width, height);
 
+      // Notebook ruled lines
       ctx.save();
-      ctx.strokeStyle = 'rgba(63,63,70,0.2)';
+      ctx.strokeStyle = 'rgba(41,37,36,0.12)';
       ctx.lineWidth = 1;
-      for (let x = 0; x < width; x += 48) {
-        ctx.beginPath();
-        ctx.moveTo(x + 0.5, 0);
-        ctx.lineTo(x + 0.5, height);
-        ctx.stroke();
-      }
-      for (let y = 0; y < height; y += 48) {
+      for (let y = 28; y < height; y += 28) {
         ctx.beginPath();
         ctx.moveTo(0, y + 0.5);
         ctx.lineTo(width, y + 0.5);
         ctx.stroke();
       }
+      // Margin rule
+      ctx.strokeStyle = 'rgba(239,68,68,0.28)';
+      ctx.beginPath();
+      ctx.moveTo(36.5, 0);
+      ctx.lineTo(36.5, height);
+      ctx.stroke();
       ctx.restore();
 
       const graph = graphRef.current;
@@ -334,13 +328,13 @@ export function VectorVaultView({ leads, isLoading = false }: VectorVaultViewPro
         ctx.moveTo(a.x, a.y);
         ctx.lineTo(b.x, b.y);
         ctx.strokeStyle = active
-          ? 'rgba(167,139,250,0.55)'
+          ? 'rgba(14,165,233,0.7)'
           : dimmed
-            ? 'rgba(63,63,70,0.1)'
+            ? 'rgba(28,25,23,0.08)'
             : query && (aMatch || bMatch)
-              ? 'rgba(125,211,252,0.4)'
-              : 'rgba(113,113,122,0.22)';
-        ctx.lineWidth = active ? 1.4 : 0.7;
+              ? 'rgba(249,115,22,0.55)'
+              : 'rgba(28,25,23,0.22)';
+        ctx.lineWidth = active ? 1.8 : 1;
         ctx.stroke();
       }
 
@@ -362,37 +356,62 @@ export function VectorVaultView({ leads, isLoading = false }: VectorVaultViewPro
         );
         ctx.fillStyle = node.color;
         ctx.globalAlpha = dimmed
-          ? 0.12
+          ? 0.18
           : isActive
             ? 1
             : node.kind === 'lead'
-              ? 0.9
-              : 0.96;
+              ? 0.95
+              : 1;
         ctx.fill();
+
+        // Ink outline so nodes read on paper
+        if (!dimmed) {
+          ctx.beginPath();
+          ctx.arc(
+            node.x,
+            node.y,
+            isActive && node.kind === 'lead' ? node.radius + 1.2 : node.radius,
+            0,
+            Math.PI * 2
+          );
+          ctx.strokeStyle = 'rgba(28,25,23,0.85)';
+          ctx.lineWidth = node.kind === 'lead' ? 1 : 1.6;
+          ctx.stroke();
+        }
 
         if (!dimmed && node.kind !== 'lead') {
           ctx.beginPath();
           ctx.arc(node.x, node.y, node.radius + 5, 0, Math.PI * 2);
-          ctx.strokeStyle = `${node.color}55`;
+          ctx.strokeStyle = `${node.color}66`;
           ctx.lineWidth = 2;
           ctx.stroke();
         }
 
         if (!dimmed && (node.kind !== 'lead' || isActive)) {
-          ctx.globalAlpha = 0.95;
-          ctx.fillStyle = '#fafafa';
+          ctx.globalAlpha = 1;
+          ctx.fillStyle = '#1c1917';
           ctx.font =
             node.kind === 'country'
-              ? '600 13px ui-sans-serif, system-ui, sans-serif'
+              ? '700 13px "Space Grotesk", ui-sans-serif, system-ui, sans-serif'
               : node.kind === 'niche'
-                ? '600 11px ui-sans-serif, system-ui, sans-serif'
-                : '500 10px ui-sans-serif, system-ui, sans-serif';
+                ? '600 11px "Space Grotesk", ui-sans-serif, system-ui, sans-serif'
+                : '500 10px "Work Sans", ui-sans-serif, system-ui, sans-serif';
           ctx.textAlign = 'center';
-          ctx.fillText(
-            node.label.length > 26 ? `${node.label.slice(0, 24)}…` : node.label,
-            node.x,
-            node.y - node.radius - 8
+          // Soft label plate for readability
+          const label =
+            node.label.length > 26 ? `${node.label.slice(0, 24)}…` : node.label;
+          const metrics = ctx.measureText(label);
+          const padX = 6;
+          const labelY = node.y - node.radius - 10;
+          ctx.fillStyle = 'rgba(255,253,247,0.92)';
+          ctx.fillRect(
+            node.x - metrics.width / 2 - padX,
+            labelY - 11,
+            metrics.width + padX * 2,
+            16
           );
+          ctx.fillStyle = '#1c1917';
+          ctx.fillText(label, node.x, labelY);
         }
         ctx.globalAlpha = 1;
       }
@@ -511,7 +530,7 @@ export function VectorVaultView({ leads, isLoading = false }: VectorVaultViewPro
       ref={containerRef}
       data-testid="vector-vault-view"
       aria-label="Vector vault graph view"
-      className="relative h-[70vh] min-h-[520px] w-full overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950"
+      className="relative h-[70vh] min-h-[520px] w-full overflow-hidden rounded-xl border border-ink bg-paper"
     >
       {/* Absolute canvas so sizing never feeds back into layout */}
       <canvas
@@ -529,33 +548,33 @@ export function VectorVaultView({ leads, isLoading = false }: VectorVaultViewPro
         onWheel={onWheel}
       />
 
-      <div className="pointer-events-none absolute bottom-4 left-4 z-10 rounded-lg border border-zinc-800/80 bg-zinc-950/70 px-3 py-2 text-xs text-zinc-300 backdrop-blur">
-        <p className="font-medium text-zinc-100">Vault graph</p>
-        <p className="mt-1 text-zinc-400">
+      <div className="pointer-events-none absolute bottom-4 left-4 z-10 rounded-lg border border-ink bg-paper px-3 py-2 text-xs text-ink-muted backdrop-blur">
+        <p className="font-medium text-ink">Vault graph</p>
+        <p className="mt-1 text-ink-muted">
           {stats.leads} leads · {stats.niches} niches · {stats.countries}{' '}
           countries
         </p>
-        <p className="mt-1 text-zinc-500">
+        <p className="mt-1 text-ink-muted">
           Click a node for details · Ctrl+scroll to zoom
         </p>
       </div>
 
       <div className="absolute left-1/2 top-4 z-30 flex w-[min(440px,70%)] -translate-x-1/2 flex-col gap-2">
         <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
           <Input
             data-testid="vector-search-input"
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             placeholder="Search leads, niches, countries…"
-            className="h-10 border-zinc-700 bg-zinc-950/90 pl-9 pr-9 text-zinc-100 shadow-lg backdrop-blur placeholder:text-zinc-500"
+            className="h-10 border-ink bg-paper pl-9 pr-9 text-ink shadow-lg backdrop-blur placeholder:text-ink-muted"
             aria-label="Search vault graph"
           />
           {searchQuery && (
             <button
               type="button"
               aria-label="Clear search"
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-ink-muted hover:bg-paper-deep hover:text-ink"
               onClick={() => setSearchQuery('')}
             >
               <X className="h-4 w-4" />
@@ -564,7 +583,7 @@ export function VectorVaultView({ leads, isLoading = false }: VectorVaultViewPro
         </div>
         <div className="flex items-center justify-center gap-2">
           {searchQuery ? (
-            <p className="text-xs text-zinc-400">
+            <p className="text-xs text-ink-muted">
               {matchCount} matching lead{matchCount === 1 ? '' : 's'}
             </p>
           ) : null}
@@ -581,22 +600,22 @@ export function VectorVaultView({ leads, isLoading = false }: VectorVaultViewPro
       </div>
 
       {hoveredLead && !sidebar && (
-        <div className="pointer-events-none absolute bottom-4 right-4 z-10 max-w-sm rounded-lg border border-zinc-700 bg-zinc-900/90 px-3 py-2 text-xs text-zinc-200 backdrop-blur">
-          <p className="font-semibold text-zinc-50">{hoveredLead.name}</p>
-          <p className="mt-1 text-zinc-400">
+        <div className="pointer-events-none absolute bottom-4 right-4 z-10 max-w-sm rounded-lg border border-ink bg-paper px-3 py-2 text-xs text-ink backdrop-blur">
+          <p className="font-semibold text-ink">{hoveredLead.name}</p>
+          <p className="mt-1 text-ink-muted">
             {hoveredLead.niche} · {hoveredLead.country}
           </p>
         </div>
       )}
 
       {isLoading && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-zinc-950/60 text-sm text-zinc-300">
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-paper/80 text-sm text-ink-muted">
           Loading vault…
         </div>
       )}
 
       {!isLoading && leads.length === 0 && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center text-sm text-zinc-400">
+        <div className="absolute inset-0 z-20 flex items-center justify-center text-sm text-ink-muted">
           No leads to map in the vault yet.
         </div>
       )}
@@ -606,7 +625,7 @@ export function VectorVaultView({ leads, isLoading = false }: VectorVaultViewPro
           <button
             type="button"
             aria-label="Dismiss details panel"
-            className="absolute inset-0 z-40 bg-black/35"
+            className="absolute inset-0 z-40 bg-ink/25"
             onClick={() => {
               setSidebar(null);
               selectedRef.current = null;
@@ -615,14 +634,14 @@ export function VectorVaultView({ leads, isLoading = false }: VectorVaultViewPro
           />
           <aside
             data-testid="vector-sidebar"
-            className="absolute inset-y-0 right-0 z-50 flex w-[min(100%,520px)] flex-col border-l border-zinc-800 bg-zinc-950 shadow-2xl shadow-black/50"
+            className="absolute inset-y-0 right-0 z-50 flex w-[min(100%,520px)] flex-col border-l border-ink bg-paper shadow-[4px_0_0_0_rgba(28,25,23,0.12)]"
           >
-            <div className="flex items-start justify-between gap-3 border-b border-zinc-800 px-5 py-4">
+            <div className="flex items-start justify-between gap-3 border-b border-ink px-5 py-4">
               <div className="min-w-0 pr-2">
-                <p className="text-base font-semibold leading-snug text-zinc-100 break-words">
+                <p className="text-base font-semibold leading-snug text-ink break-words">
                   {sidebar.title}
                 </p>
-                <p className="mt-1 text-xs text-zinc-400">{sidebar.subtitle}</p>
+                <p className="mt-1 text-xs text-ink-muted">{sidebar.subtitle}</p>
               </div>
               <Button
                 type="button"

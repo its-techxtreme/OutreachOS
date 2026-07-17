@@ -4,16 +4,21 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { DoodleDecor } from '@/components/landing/DoodleDecor';
 import { useAuth } from '@/lib/hooks/useAuth';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { signIn, error, clearError } = useAuth();
+  const [demoLoading, setDemoLoading] = useState(false);
+  const {
+    signIn,
+    signInWithGoogle,
+    signInAsDemo,
+    error,
+    clearError,
+  } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -27,26 +32,29 @@ export function LoginForm() {
       const redirectTo = searchParams.get('redirect') || '/dashboard';
       router.push(redirectTo);
     } catch {
-      // Error is surfaced via AuthProvider state.
+      // Error via AuthProvider
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-950 px-4">
-      <div className="w-full max-w-md rounded-lg border border-zinc-800 bg-zinc-900 p-8 shadow-xl">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-zinc-100">OutreachOS</h1>
-          <p className="mt-2 text-sm text-zinc-400">
-            Sign in to access your lead management dashboard
+    <div className="auth-stage paper-texture flex min-h-screen items-center justify-center px-4 py-12">
+      <DoodleDecor />
+      <div className="glass-panel relative z-10 w-full max-w-md p-8 md:p-10">
+        <div className="mb-6 text-center">
+          <p className="font-display text-4xl font-bold text-ink">
+            Outreach<span className="text-marker">OS</span>
+          </p>
+          <p className="mt-2 text-sm text-ink-muted">
+            Welcome back — grab your vault and keep dialing.
           </p>
         </div>
 
         {error && (
           <div
             role="alert"
-            className="mb-4 rounded-md border border-red-800 bg-red-950/40 px-3 py-2 text-sm text-red-200"
+            className="mb-4 rounded-lg border border-danger/40 bg-white/50 px-3 py-2 text-sm text-danger backdrop-blur-sm"
           >
             {/invalid|credentials|password|email/i.test(error)
               ? 'Invalid credentials'
@@ -54,51 +62,96 @@ export function LoginForm() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="space-y-1">
+            <label
+              htmlFor="email"
+              className="font-label text-xs font-semibold uppercase tracking-wide text-ink-muted"
+            >
+              Email
+            </label>
+            <input
               id="email"
               type="email"
               autoComplete="email"
               data-testid="email-input"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="border-zinc-700 bg-zinc-800 text-zinc-100"
+              className="doodle-input"
               required
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
+          <div className="space-y-1">
+            <label
+              htmlFor="password"
+              className="font-label text-xs font-semibold uppercase tracking-wide text-ink-muted"
+            >
+              Password
+            </label>
+            <input
               id="password"
               type="password"
               autoComplete="current-password"
               data-testid="password-input"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="border-zinc-700 bg-zinc-800 text-zinc-100"
+              className="doodle-input"
               required
             />
           </div>
 
-          <Button
+          <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full"
+            className="doodle-btn w-full rounded-md bg-coral/95 py-3 font-label text-sm font-bold uppercase tracking-wider text-ink disabled:opacity-60"
             data-testid="login-button"
           >
-            {isSubmitting ? 'Signing in...' : 'Sign in'}
-          </Button>
+            {isSubmitting ? 'Signing in…' : 'Sign in'}
+          </button>
         </form>
 
-        <p className="mt-4 text-center text-sm text-zinc-400">
+        <div className="my-5 flex items-center gap-3">
+          <hr className="wobbly-divider flex-1 opacity-40" />
+          <span className="font-label text-xs uppercase text-ink-muted">or</span>
+          <hr className="wobbly-divider flex-1 opacity-40" />
+        </div>
+
+        <button
+          type="button"
+          onClick={() => void signInWithGoogle()}
+          className="doodle-btn mb-3 w-full rounded-md bg-white/55 py-3 font-label text-sm font-bold uppercase tracking-wider text-ink backdrop-blur-sm"
+          data-testid="google-signin-button"
+        >
+          Continue with Google
+        </button>
+
+        <button
+          type="button"
+          disabled={demoLoading}
+          onClick={() => {
+            setDemoLoading(true);
+            void signInAsDemo().finally(() => setDemoLoading(false));
+          }}
+          className="doodle-btn w-full rounded-md bg-highlighter/90 py-3 font-label text-sm font-bold uppercase tracking-wider text-ink disabled:opacity-60"
+          data-testid="demo-signin-button"
+        >
+          {demoLoading ? 'Opening demo…' : 'Sign in as Demo'}
+        </button>
+
+        <p className="mt-6 text-center text-sm text-ink-muted">
           <Link
             href="/auth/reset-password"
-            className="text-indigo-400 hover:text-indigo-300"
+            className="text-marker underline decoration-2 underline-offset-2"
           >
             Forgot password?
+          </Link>
+          {' · '}
+          <Link
+            href="/auth/signup"
+            className="text-marker underline decoration-2 underline-offset-2"
+          >
+            Create account
           </Link>
         </p>
       </div>

@@ -6,9 +6,11 @@ jest.mock('@/lib/supabase-server', () => ({
   getSupabaseServer: jest.fn(() => ({
     from: jest.fn(() => ({
       select: jest.fn(() => ({
-        order: jest.fn(async () => ({
-          data: null,
-          error: { message: 'db unavailable' },
+        eq: jest.fn(() => ({
+          order: jest.fn(async () => ({
+            data: null,
+            error: { message: 'db unavailable' },
+          })),
         })),
       })),
     })),

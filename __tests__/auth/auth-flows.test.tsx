@@ -31,6 +31,9 @@ const authState = {
   error: null as string | null,
   isAuthenticated: false,
   signIn: mockSignIn,
+  signUp: jest.fn(),
+  signInWithGoogle: jest.fn(),
+  signInAsDemo: jest.fn(),
   signOut: jest.fn(),
   resetPassword: mockResetPassword,
   updatePassword: jest.fn(),
@@ -71,7 +74,7 @@ describe('Authentication Flows', () => {
 
     await user.type(screen.getByLabelText(/email/i), 'admin@test.com');
     await user.type(screen.getByLabelText(/password/i), 'SecurePassword123!');
-    await user.click(screen.getByRole('button', { name: /sign in/i }));
+    await user.click(screen.getByTestId('login-button'));
 
     await waitFor(() => {
       expect(mockSignIn).toHaveBeenCalledWith(
@@ -90,7 +93,7 @@ describe('Authentication Flows', () => {
     const { rerender } = render(<LoginForm />);
     await user.type(screen.getByLabelText(/email/i), 'invalid@test.com');
     await user.type(screen.getByLabelText(/password/i), 'wrongpassword');
-    await user.click(screen.getByRole('button', { name: /sign in/i }));
+    await user.click(screen.getByTestId('login-button'));
 
     rerender(<LoginForm />);
 

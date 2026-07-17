@@ -1,30 +1,38 @@
 import type { Metadata } from 'next';
-import { JetBrains_Mono, Manrope, Syne } from 'next/font/google';
+import { Caveat, IBM_Plex_Mono, Space_Grotesk, Work_Sans } from 'next/font/google';
 
 import { Providers } from '@/components/providers';
 
 import './globals.css';
 
-const syne = Syne({
+const caveat = Caveat({
   variable: '--font-display',
   subsets: ['latin'],
-  weight: ['600', '700', '800'],
+  weight: ['500', '600', '700'],
 });
 
-const manrope = Manrope({
-  variable: '--font-geist-sans',
+const workSans = Work_Sans({
+  variable: '--font-body',
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  variable: '--font-geist-mono',
+const spaceGrotesk = Space_Grotesk({
+  variable: '--font-label',
   subsets: ['latin'],
+  weight: ['500', '600', '700'],
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  variable: '--font-mono',
+  subsets: ['latin'],
+  weight: ['400', '500'],
 });
 
 export const metadata: Metadata = {
   title: 'OutreachOS',
-  description: 'Automated lead management and outreach system',
+  description:
+    'Personal lead pipelines with a sketchbook soul — import, organize, and outreach your way.',
 };
 
 export default function RootLayout({
@@ -35,9 +43,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${syne.variable} ${manrope.variable} ${jetbrainsMono.variable} dark h-full antialiased`}
+      className={`${caveat.variable} ${workSans.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-zinc-950 font-sans text-zinc-100">
+      <body className="flex min-h-full flex-col bg-paper font-sans text-ink">
         <Providers>{children}</Providers>
       </body>
     </html>

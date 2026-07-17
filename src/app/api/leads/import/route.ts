@@ -10,9 +10,7 @@ import {
 import { Permission, RBACService } from '@/lib/auth/rbac';
 import { RateLimitError } from '@/lib/errors';
 import {
-  DEMO_MAX_IMPORT_ROWS,
   MAX_IMPORT_FILE_BYTES,
-  MAX_IMPORT_ROWS,
 } from '@/lib/import/constants';
 import {
   assertSafeImportFile,
@@ -25,6 +23,13 @@ import {
   getImportRateLimiterForUser,
 } from '@/lib/rate-limiter';
 import { SecurityEventType, SecurityLogger } from '@/lib/security-logger';
+import { ensureDefaultUserRole } from '@/lib/auth/ensure-role';
+import { countLeadsForOwner } from '@/lib/leads';
+import {
+  isUnlimitedLeadStorage,
+  maxImportRowsForRoles,
+  maxStoredLeadsForRoles,
+} from '@/lib/quotas';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -51,9 +56,9 @@ export async function POST(request: Request): Promise<NextResponse> {
   const path = '/api/leads/import';
 
   try {
-    const user = await getServerAuthUser();
+    const rawUser = await getServerAuthUser();
 
-    if (!user) {
+    if (!rawUser) {
       SecurityLogger.log(
         SecurityEventType.LEAD_IMPORT_DENIED,
         { requestId, path, message: 'Unauthenticated import attempt', ip },
@@ -61,6 +66,8 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
       return withApiHeaders(unauthorizedJsonResponse(requestId), requestId);
     }
+
+    const user = await ensureDefaultUserRole(rawUser);
 
     if (!RBACService.hasPermission(user, Permission.LEADS_CREATE)) {
       SecurityLogger.log(
@@ -211,9 +218,8 @@ export async function POST(request: Request): Promise<NextResponse> {
       throw error;
     }
 
-    const rowCap = RBACService.isDemoUser(user)
-      ? DEMO_MAX_IMPORT_ROWS
-      : MAX_IMPORT_ROWS;
+    const roles = RBACService.getUserRoles(user);
+    const rowCap = maxImportRowsForRoles(roles);
     if (rows.length > rowCap) {
       return withApiHeaders(
         NextResponse.json(
@@ -228,7 +234,25 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
 
-    const summary = await importValidatedLeads(rows);
+    if (!RBACService.isDemoUser(user) && !isUnlimitedLeadStorage(roles)) {
+      const currentCount = await countLeadsForOwner(user.id);
+      const maxStored = maxStoredLeadsForRoles(roles);
+      if (currentCount >= maxStored) {
+        return withApiHeaders(
+          NextResponse.json(
+            {
+              error: `Lead limit reached (${maxStored}). Delete leads or upgrade before importing.`,
+              code: 'lead_quota_exceeded',
+              requestId,
+            },
+            { status: 403 }
+          ),
+          requestId
+        );
+      }
+    }
+
+    const summary = await importValidatedLeads(rows, { ownerId: user.id });
 
     SecurityLogger.log(
       SecurityEventType.LEAD_IMPORT,

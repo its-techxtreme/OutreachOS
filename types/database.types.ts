@@ -18,6 +18,7 @@ export interface Database {
           address: string | null;
           maps_url: string;
           status: LeadStatus;
+          owner_id: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -30,6 +31,7 @@ export interface Database {
           address?: string | null;
           maps_url: string;
           status?: LeadStatus;
+          owner_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -42,6 +44,7 @@ export interface Database {
           address?: string | null;
           maps_url?: string;
           status?: LeadStatus;
+          owner_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -78,6 +81,7 @@ export interface Database {
           search_term: string;
           sim_threshold?: number;
           result_limit?: number;
+          p_owner_id?: string | null;
         };
         Returns: Database['public']['Tables']['leads']['Row'][];
       };
@@ -91,6 +95,7 @@ export interface Database {
           p_end_date?: string | null;
           p_page?: number;
           p_page_size?: number;
+          p_owner_id?: string | null;
         };
         Returns: {
           leads: Database['public']['Tables']['leads']['Row'][];

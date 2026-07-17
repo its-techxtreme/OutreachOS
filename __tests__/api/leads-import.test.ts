@@ -64,6 +64,14 @@ jest.mock('@/lib/import/import-leads', () => ({
   importValidatedLeads: jest.fn(),
 }));
 
+jest.mock('@/lib/auth/ensure-role', () => ({
+  ensureDefaultUserRole: jest.fn(async (user: unknown) => user),
+}));
+
+jest.mock('@/lib/leads', () => ({
+  countLeadsForOwner: jest.fn().mockResolvedValue(0),
+}));
+
 jest.mock('@/lib/security-logger', () => ({
   SecurityEventType: {
     LEAD_IMPORT: 'LEAD_IMPORT',
@@ -188,6 +196,9 @@ describe('POST /api/leads/import', () => {
     expect(response.status).toBe(200);
     expect(body.success).toBe(true);
     expect(body.summary.created).toBe(1);
-    expect(importValidatedLeads).toHaveBeenCalled();
+    expect(importValidatedLeads).toHaveBeenCalledWith(
+      expect.any(Array),
+      expect.objectContaining({ ownerId: 'u1' })
+    );
   });
 });

@@ -11,6 +11,7 @@ import {
 import { validateApiKey } from '@/lib/auth';
 import { RateLimitError } from '@/lib/errors';
 import { submitLead } from '@/lib/leads';
+import { resolveAgentLeadOwnerId } from '@/lib/auth/agent-owner';
 import { logger } from '@/lib/logger';
 import { metrics } from '@/lib/metrics';
 import { getRateLimiterForAuth } from '@/lib/rate-limiter';
@@ -151,11 +152,29 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
 
+    const ownerId = await resolveAgentLeadOwnerId();
+    if (!ownerId) {
+      return jsonResponse(
+        {
+          success: false,
+          error: 'Agent lead owner is not configured',
+          requestId,
+        },
+        500,
+        requestId,
+        startedAt,
+        path
+      );
+    }
+
     const dbStartTime = Date.now();
     let result;
 
     try {
-      result = await submitLead(parsed.data.lead);
+      result = await submitLead({
+        ...parsed.data.lead,
+        owner_id: ownerId,
+      });
       metrics.recordDatabaseQuery(result.kind !== 'error');
       logger.logDatabaseOperation(
         'insert',

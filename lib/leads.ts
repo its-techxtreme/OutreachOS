@@ -25,10 +25,25 @@ export type LeadSubmissionResult =
   | LeadFailureResult;
 
 export type LeadInput = Pick<ValidatedLead, 'name' | 'niche' | 'country' | 'maps_url'> &
-  Partial<Pick<ValidatedLead, 'phone' | 'address'>>;
+  Partial<Pick<ValidatedLead, 'phone' | 'address'>> & {
+    owner_id: string;
+  };
 
 export function isUniqueViolation(error: PostgrestError): boolean {
   return error.code === '23505';
+}
+
+export async function countLeadsForOwner(ownerId: string): Promise<number> {
+  const { count, error } = await getSupabaseServer()
+    .from('leads')
+    .select('id', { count: 'exact', head: true })
+    .eq('owner_id', ownerId);
+
+  if (error) {
+    throw error;
+  }
+
+  return count ?? 0;
 }
 
 export async function submitLead(lead: LeadInput): Promise<LeadSubmissionResult> {
@@ -40,6 +55,7 @@ export async function submitLead(lead: LeadInput): Promise<LeadSubmissionResult>
     address: lead.address ?? null,
     maps_url: lead.maps_url,
     status: 'New',
+    owner_id: lead.owner_id,
   };
 
   const { data, error } = await getSupabaseServer()

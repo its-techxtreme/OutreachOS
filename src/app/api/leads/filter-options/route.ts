@@ -5,16 +5,18 @@ import {
   unauthorizedJsonResponse,
 } from '@/lib/auth/require-session';
 import { RBACService } from '@/lib/auth/rbac';
+import { ensureDefaultUserRole } from '@/lib/auth/ensure-role';
 import { getDemoSampleLeadIds } from '@/lib/demo/sample-leads';
 import { getSupabaseServer } from '@/lib/supabase-server';
 
 export async function GET(): Promise<NextResponse> {
   try {
-    const user = await getServerAuthUser();
-    if (!user) {
+    const rawUser = await getServerAuthUser();
+    if (!rawUser) {
       return unauthorizedJsonResponse();
     }
 
+    const user = await ensureDefaultUserRole(rawUser);
     const supabase = getSupabaseServer();
     const isDemo = RBACService.isDemoUser(user);
     const demoIds = isDemo ? await getDemoSampleLeadIds(supabase) : null;
@@ -32,6 +34,9 @@ export async function GET(): Promise<NextResponse> {
     if (demoIds) {
       nicheQuery = nicheQuery.in('id', demoIds);
       countryQuery = countryQuery.in('id', demoIds);
+    } else {
+      nicheQuery = nicheQuery.eq('owner_id', user.id);
+      countryQuery = countryQuery.eq('owner_id', user.id);
     }
 
     const [nicheResult, countryResult] = await Promise.all([

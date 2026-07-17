@@ -19,6 +19,8 @@ export enum Role {
   SUPER_ADMIN = 'super_admin',
   ADMIN = 'admin',
   MANAGER = 'manager',
+  /** Standard public signup — personal CRM only. */
+  USER = 'user',
   VIEWER = 'viewer',
   /** Public community demo account — intentionally limited. */
   DEMO = 'demo',
@@ -46,6 +48,13 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     Permission.LEADS_UPDATE,
     Permission.LEADS_EXPORT,
     Permission.USERS_VIEW,
+  ],
+  [Role.USER]: [
+    Permission.LEADS_VIEW,
+    Permission.LEADS_CREATE,
+    Permission.LEADS_UPDATE,
+    Permission.LEADS_DELETE,
+    Permission.LEADS_EXPORT,
   ],
   [Role.VIEWER]: [Permission.LEADS_VIEW],
   [Role.DEMO]: [

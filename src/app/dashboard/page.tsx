@@ -6,7 +6,7 @@ import { DashboardClient } from '@/components/dashboard/DashboardClient';
 export default function DashboardPage() {
   return (
     <RouteGuard requireAuth>
-      <div className="min-h-screen bg-zinc-950 text-zinc-100">
+      <div className="min-h-screen bg-paper text-ink">
         <DashboardClient />
       </div>
     </RouteGuard>

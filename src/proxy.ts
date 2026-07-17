@@ -104,7 +104,11 @@ export default async function proxy(request: NextRequest) {
       }
     }
 
-    if (pathname.startsWith('/auth/login') && user) {
+    if (
+      (pathname.startsWith('/auth/login') ||
+        pathname.startsWith('/auth/signup')) &&
+      user
+    ) {
       const redirectTo =
         request.nextUrl.searchParams.get('redirect') || '/dashboard';
       return applySecurityHeaders(

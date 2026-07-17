@@ -5,24 +5,38 @@ import { AuthService } from './supabase-auth';
 
 const LAST_ACTIVITY_KEY = 'outreachos_last_activity';
 
+/**
+ * Idle / age session watchdog.
+ *
+ * Token refresh is owned by the Supabase browser client (`autoRefreshToken`).
+ * A second manual refresh loop raced getSession/refreshSession and produced
+ * "Refresh result discarded" + "Failed to fetch" console errors.
+ */
 export class SessionSecurityService {
   static readonly SESSION_TIMEOUT = 24 * 60 * 60 * 1000;
   static readonly IDLE_TIMEOUT = 2 * 60 * 60 * 1000;
+  /** Kept for tests / docs — Supabase client handles refresh itself. */
   static readonly REFRESH_THRESHOLD = 5 * 60 * 1000;
 
   private static activityInterval: ReturnType<typeof setInterval> | null = null;
-  private static refreshInterval: ReturnType<typeof setInterval> | null = null;
   private static activityHandlersAttached = false;
+  private static checkInFlight = false;
+  private static attachedListeners: Array<{
+    event: string;
+    handler: () => void;
+  }> = [];
 
   static setupSessionMonitoring(authService?: AuthService) {
     if (typeof window === 'undefined') {
       return () => undefined;
     }
 
+    // Avoid stacking intervals when React Strict Mode remounts.
+    this.teardownIntervalsOnly();
+
     const service = authService ?? new AuthService();
 
     this.setupIdleDetection();
-    this.setupTokenRefresh(service);
 
     this.activityInterval = setInterval(() => {
       void this.checkSessionExpiry(service);
@@ -34,14 +48,29 @@ export class SessionSecurityService {
   }
 
   static teardown() {
+    this.teardownIntervalsOnly();
+    this.teardownActivityListeners();
+  }
+
+  private static teardownIntervalsOnly() {
     if (this.activityInterval) {
       clearInterval(this.activityInterval);
       this.activityInterval = null;
     }
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval);
-      this.refreshInterval = null;
+    this.checkInFlight = false;
+  }
+
+  private static teardownActivityListeners() {
+    if (typeof document === 'undefined') {
+      this.activityHandlersAttached = false;
+      this.attachedListeners = [];
+      return;
     }
+    for (const { event, handler } of this.attachedListeners) {
+      document.removeEventListener(event, handler);
+    }
+    this.attachedListeners = [];
+    this.activityHandlersAttached = false;
   }
 
   static touchActivity() {
@@ -65,37 +94,59 @@ export class SessionSecurityService {
   }
 
   private static async checkSessionExpiry(authService: AuthService) {
-    const session = await authService.getCurrentSession();
-    if (!session) {
+    if (this.checkInFlight) {
       return;
     }
+    this.checkInFlight = true;
 
-    const now = Date.now();
-    const expiresAt = session.expires_at ? session.expires_at * 1000 : 0;
-    const idleTime = now - this.getLastActivity();
+    try {
+      const session = await authService.getCurrentSession();
+      if (!session) {
+        return;
+      }
 
-    if (expiresAt > 0 && now > expiresAt + this.SESSION_TIMEOUT) {
-      logger.warn('Session expired due to age', {
-        userId: session.user.id,
-      });
-      SecurityLogger.log(SecurityEventType.SESSION_EXPIRED, {
-        userId: session.user.id,
-        reason: 'age',
-      });
-      await authService.signOut();
-      return;
+      const now = Date.now();
+      const expiresAt = session.expires_at ? session.expires_at * 1000 : 0;
+      const idleTime = now - this.getLastActivity();
+
+      // Absolute ceiling: token expiry + grace. Relies on Supabase auto-refresh
+      // for normal renewal; this only catches abandoned/broken sessions.
+      if (expiresAt > 0 && now > expiresAt + this.SESSION_TIMEOUT) {
+        logger.warn('Session expired due to age', {
+          userId: session.user.id,
+        });
+        SecurityLogger.log(SecurityEventType.SESSION_EXPIRED, {
+          userId: session.user.id,
+          reason: 'age',
+        });
+        await this.safeSignOut(authService);
+        return;
+      }
+
+      if (idleTime > this.IDLE_TIMEOUT) {
+        logger.warn('Session expired due to inactivity', {
+          userId: session.user.id,
+          idleTime,
+        });
+        SecurityLogger.log(SecurityEventType.SESSION_EXPIRED, {
+          userId: session.user.id,
+          reason: 'idle',
+        });
+        await this.safeSignOut(authService);
+      }
+    } finally {
+      this.checkInFlight = false;
     }
+  }
 
-    if (idleTime > this.IDLE_TIMEOUT) {
-      logger.warn('Session expired due to inactivity', {
-        userId: session.user.id,
-        idleTime,
-      });
-      SecurityLogger.log(SecurityEventType.SESSION_EXPIRED, {
-        userId: session.user.id,
-        reason: 'idle',
-      });
+  private static async safeSignOut(authService: AuthService) {
+    try {
       await authService.signOut();
+    } catch (error) {
+      // Network blips during forced logout should not cascade into more errors.
+      logger.warn('Sign out after session expiry failed', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
     }
   }
 
@@ -119,39 +170,10 @@ export class SessionSecurityService {
 
     events.forEach((event) => {
       document.addEventListener(event, updateActivity, { passive: true });
+      this.attachedListeners.push({ event, handler: updateActivity });
     });
 
     this.activityHandlersAttached = true;
     updateActivity();
-  }
-
-  private static setupTokenRefresh(authService: AuthService) {
-    if (this.refreshInterval) {
-      return;
-    }
-
-    this.refreshInterval = setInterval(async () => {
-      const session = await authService.getCurrentSession();
-      if (!session?.expires_at) {
-        return;
-      }
-
-      const timeUntilExpiry = session.expires_at * 1000 - Date.now();
-
-      if (timeUntilExpiry < this.REFRESH_THRESHOLD) {
-        try {
-          await authService.refreshSession();
-          logger.info('Session token refreshed automatically', {
-            userId: session.user.id,
-          });
-        } catch (error) {
-          logger.error('Failed to refresh session token', {
-            userId: session.user.id,
-            error: error instanceof Error ? error.message : 'Unknown error',
-          });
-          await authService.signOut();
-        }
-      }
-    }, 60_000);
   }
 }

@@ -34,6 +34,16 @@ describe('RBACService', () => {
     expect(RBACService.isDemoUser(demoUser)).toBe(true);
   });
 
+  it('grants free users full personal CRM without system settings', () => {
+    const freeUser = { app_metadata: { roles: [Role.USER] } };
+    expect(RBACService.hasPermission(freeUser, Permission.LEADS_DELETE)).toBe(
+      true
+    );
+    expect(
+      RBACService.hasPermission(freeUser, Permission.SYSTEM_SETTINGS)
+    ).toBe(false);
+  });
+
   it('returns role-specific permissions', () => {
     expect(RBACService.hasPermission(viewerUser, Permission.LEADS_VIEW)).toBe(
       true

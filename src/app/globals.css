@@ -1,44 +1,177 @@
 @import "tailwindcss";
 
 :root {
-  --background: #09090b;
-  --foreground: #f4f4f5;
-  --accent: #2dd4bf;
-  --accent-secondary: #38bdf8;
-  --accent-deep: #0f766e;
+  --paper: #fffdf7;
+  --paper-deep: #f3ede0;
+  --ink: #1c1917;
+  --ink-muted: #57534e;
+  --marker: #0ea5e9;
+  --highlighter: #facc15;
+  --coral: #f97316;
+  --line: #292524;
+  --success: #16a34a;
+  --danger: #dc2626;
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --accent: var(--coral);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-paper: var(--paper);
+  --color-paper-deep: var(--paper-deep);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-marker: var(--marker);
+  --color-highlighter: var(--highlighter);
+  --color-coral: var(--coral);
+  --color-line: var(--line);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-mono);
   --font-display: var(--font-display);
+  --font-label: var(--font-label);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body), system-ui, sans-serif;
 }
 
 .font-display {
-  font-family: var(--font-display), var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-display), cursive;
 }
 
-.atmosphere-radial {
-  background: radial-gradient(
-    circle at center,
-    rgba(45, 212, 191, 0.12) 0%,
-    transparent 55%
+.font-label {
+  font-family: var(--font-label), system-ui, sans-serif;
+}
+
+.paper-texture {
+  background-color: var(--paper);
+  background-image:
+    /* faint notebook margin */
+    linear-gradient(
+      to right,
+      transparent 0,
+      transparent calc(2.5rem - 1px),
+      rgba(220, 38, 38, 0.18) calc(2.5rem - 1px),
+      rgba(220, 38, 38, 0.18) 2.5rem,
+      transparent 2.5rem
+    ),
+    /* ruled lines */
+    repeating-linear-gradient(
+      transparent 0,
+      transparent 27px,
+      rgba(28, 25, 23, 0.06) 27px,
+      rgba(28, 25, 23, 0.06) 28px
+    ),
+    /* paper grain only — no color washes */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+}
+
+@media (max-width: 640px) {
+  .paper-texture {
+    background-image:
+      repeating-linear-gradient(
+        transparent 0,
+        transparent 27px,
+        rgba(28, 25, 23, 0.06) 27px,
+        rgba(28, 25, 23, 0.06) 28px
+      ),
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+  }
+}
+
+.doodle-border {
+  border: 2px solid var(--ink);
+  border-radius: 0.35rem;
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.doodle-border-soft {
+  border: 2px solid var(--ink);
+  border-radius: 0.25rem;
+}
+
+.doodle-btn {
+  border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+  cursor: pointer;
+}
+
+.doodle-btn:hover:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
+.doodle-input {
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid var(--ink);
+  border-radius: 0;
+  background: transparent;
+  padding: 0.5rem 0.25rem;
+  color: var(--ink);
+  outline: none;
+}
+
+.doodle-input:focus {
+  border-bottom-color: var(--marker);
+}
+
+.highlighter-wash {
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(250, 204, 21, 0.55) 12%,
+    rgba(250, 204, 21, 0.55) 88%,
+    transparent 100%
   );
 }
 
-.ops-grid {
-  background-image:
-    linear-gradient(to right, #ffffff 1px, transparent 1px),
-    linear-gradient(to bottom, #ffffff 1px, transparent 1px);
-  background-size: 40px 40px;
+.wobbly-divider {
+  height: 3px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-top: 2px solid var(--ink);
+  border-radius: 40%;
+  opacity: 0.85;
+}
+
+.glass-panel {
+  position: relative;
+  isolation: isolate;
+  background: transparent;
+  border: 2px solid var(--ink);
+  border-radius: 0.5rem;
+  box-shadow: 5px 5px 0 var(--ink);
+}
+
+.glass-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: rgba(255, 253, 247, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.glass-panel .doodle-input {
+  border-bottom-color: rgba(28, 25, 23, 0.45);
+}
+
+.auth-stage {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background: var(--paper);
 }
 
 .sr-only {

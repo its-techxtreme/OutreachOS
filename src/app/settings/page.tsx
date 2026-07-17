@@ -15,7 +15,7 @@ export default function SettingsPage() {
   if (!loading && user && !hasPermission(Permission.SYSTEM_SETTINGS)) {
     return (
       <RouteGuard requireAuth>
-        <div className="flex min-h-screen items-center justify-center bg-zinc-950 px-6 text-center text-zinc-300">
+        <div className="paper-texture flex min-h-screen items-center justify-center px-6 text-center text-ink-muted">
           <p>Security settings are not available for this account.</p>
         </div>
       </RouteGuard>
@@ -24,14 +24,14 @@ export default function SettingsPage() {
 
   return (
     <RouteGuard requireAuth>
-      <div className="min-h-screen bg-zinc-950 text-zinc-100">
+      <div className="paper-texture min-h-screen text-ink">
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
           <header className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight">
+              <h1 className="font-display text-3xl font-bold tracking-tight">
                 Security settings
               </h1>
-              <p className="mt-1 text-sm text-zinc-400">
+              <p className="mt-1 text-sm text-ink-muted">
                 Manage authentication and multi-factor security for your account.
               </p>
             </div>

@@ -29,6 +29,7 @@ describe('lead submission service', () => {
       phone: '+1-555-0100',
       address: '123 Main Street',
       maps_url: 'https://maps.google.com/?q=acme',
+      owner_id: 'owner-1',
     });
 
     expect(result).toEqual({
@@ -40,6 +41,7 @@ describe('lead submission service', () => {
       expect.objectContaining({
         phone: '+1-555-0100',
         address: '123 Main Street',
+        owner_id: 'owner-1',
       })
     );
   });
@@ -55,6 +57,7 @@ describe('lead submission service', () => {
       niche: 'Interior Design',
       country: 'United States',
       maps_url: 'https://maps.google.com/?q=acme',
+      owner_id: 'owner-1',
     });
 
     expect(result).toEqual({ kind: 'duplicate' });
@@ -69,6 +72,7 @@ describe('lead submission service', () => {
       niche: 'Interior Design',
       country: 'United States',
       maps_url: 'https://maps.google.com/?q=acme',
+      owner_id: 'owner-1',
     });
 
     expect(result).toEqual({ kind: 'error', error: dbError });

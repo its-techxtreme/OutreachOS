@@ -88,11 +88,11 @@ export function MFASetup({ user }: MFASetupProps) {
   };
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-6">
-      <h2 className="text-lg font-semibold text-zinc-100">
+    <div className="rounded-lg border border-ink bg-paper-deep p-6">
+      <h2 className="text-lg font-semibold text-ink">
         Multi-factor authentication
       </h2>
-      <p className="mt-1 text-sm text-zinc-400">
+      <p className="mt-1 text-sm text-ink-muted">
         Add an authenticator app for stronger account security.
       </p>
 
@@ -123,7 +123,7 @@ export function MFASetup({ user }: MFASetupProps) {
 
         {qrCode && (
           <div className="space-y-3">
-            <p className="text-sm text-zinc-300">Scan QR code</p>
+            <p className="text-sm text-ink-muted">Scan QR code</p>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={qrCode}
@@ -133,7 +133,7 @@ export function MFASetup({ user }: MFASetupProps) {
               className="rounded-md bg-white p-2"
             />
             {secret && (
-              <p className="break-all font-mono text-xs text-zinc-500">
+              <p className="break-all font-mono text-xs text-ink0">
                 Secret: {secret}
               </p>
             )}
@@ -143,7 +143,7 @@ export function MFASetup({ user }: MFASetupProps) {
                 id="mfa-token"
                 value={token}
                 onChange={(event) => setToken(event.target.value)}
-                className="border-zinc-700 bg-zinc-800"
+                className="border-ink bg-paper-deep"
                 inputMode="numeric"
                 autoComplete="one-time-code"
               />
@@ -163,7 +163,7 @@ export function MFASetup({ user }: MFASetupProps) {
                 id="disable-mfa-token"
                 value={token}
                 onChange={(event) => setToken(event.target.value)}
-                className="border-zinc-700 bg-zinc-800"
+                className="border-ink bg-paper-deep"
               />
             </div>
             <Button

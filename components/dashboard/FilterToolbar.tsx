@@ -83,11 +83,11 @@ export const FilterToolbar = memo(function FilterToolbar({
       </h2>
       <div
         data-testid="filter-toolbar"
-        className="flex flex-col gap-4 rounded-lg border border-zinc-800/80 bg-zinc-900/50 p-4 backdrop-blur-sm md:flex-row md:items-center"
+        className="doodle-border flex flex-col gap-4 bg-paper p-4 md:flex-row md:items-center"
       >
         <div className="relative flex-1">
           <Search
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500"
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted"
             aria-hidden="true"
           />
           <Input
@@ -160,25 +160,35 @@ export const FilterToolbar = memo(function FilterToolbar({
           </SelectContent>
         </Select>
 
-        <Input
-          type="date"
-          value={dateRangeStart}
-          onChange={(event) => onDateRangeStartChange?.(event.target.value)}
-          aria-label="Filter from date"
-          className="w-full md:w-40"
-        />
+        <label className="flex w-full flex-col gap-1 md:w-40">
+          <span className="font-label text-[11px] font-semibold uppercase tracking-wide text-ink-muted">
+            From
+          </span>
+          <Input
+            type="date"
+            value={dateRangeStart}
+            onChange={(event) => onDateRangeStartChange?.(event.target.value)}
+            aria-label="Filter from date"
+            className="w-full"
+          />
+        </label>
 
-        <Input
-          type="date"
-          value={dateRangeEnd}
-          onChange={(event) => onDateRangeEndChange?.(event.target.value)}
-          aria-label="Filter to date"
-          className="w-full md:w-40"
-        />
+        <label className="flex w-full flex-col gap-1 md:w-40">
+          <span className="font-label text-[11px] font-semibold uppercase tracking-wide text-ink-muted">
+            To
+          </span>
+          <Input
+            type="date"
+            value={dateRangeEnd}
+            onChange={(event) => onDateRangeEndChange?.(event.target.value)}
+            aria-label="Filter to date"
+            className="w-full"
+          />
+        </label>
 
         <div className="flex items-center gap-2 md:ml-auto">
           <p
-            className="text-sm tabular-nums text-zinc-400"
+            className="text-sm tabular-nums text-ink-muted"
             aria-live="polite"
             aria-atomic="true"
           >
@@ -244,7 +254,7 @@ export const FilterToolbar = memo(function FilterToolbar({
               aria-valuenow={exportProgress}
               aria-valuemin={0}
               aria-valuemax={100}
-              className="h-2 w-24 overflow-hidden rounded-full bg-zinc-800"
+              className="h-2 w-24 overflow-hidden rounded-full bg-paper-deep"
             >
               <div
                 className="h-full bg-indigo-500 transition-all duration-200"

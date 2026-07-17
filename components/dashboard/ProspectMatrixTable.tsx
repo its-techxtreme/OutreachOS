@@ -56,9 +56,9 @@ function SortIndicator({
   }
 
   return sortDirection === 'asc' ? (
-    <ArrowUp className="ml-1 inline h-3 w-3 text-teal-400" aria-hidden="true" />
+    <ArrowUp className="ml-1 inline h-3 w-3 text-marker" aria-hidden="true" />
   ) : (
-    <ArrowDown className="ml-1 inline h-3 w-3 text-teal-400" aria-hidden="true" />
+    <ArrowDown className="ml-1 inline h-3 w-3 text-marker" aria-hidden="true" />
   );
 }
 
@@ -80,8 +80,8 @@ function VirtualRow({
       style={style}
       {...ariaAttributes}
       className={cn(
-        'grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto] items-center border-b border-zinc-800 px-4 text-sm transition-colors hover:bg-zinc-800/50 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_auto] lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)_auto]',
-        index % 2 === 1 && 'bg-zinc-900/50',
+        'grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto] items-center border-b border-ink px-4 text-sm transition-colors hover:bg-paper-deep/50 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_auto] lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)_auto]',
+        index % 2 === 1 && 'bg-paper-deep',
         onRowClick && 'cursor-pointer'
       )}
       onClick={() => onRowClick?.(lead)}
@@ -93,25 +93,25 @@ function VirtualRow({
       }}
       tabIndex={onRowClick ? 0 : undefined}
     >
-      <div className="truncate font-semibold text-zinc-100">{lead.name}</div>
+      <div className="truncate font-semibold text-ink">{lead.name}</div>
       <div className="hidden md:block">
         <Badge variant={getNicheVariant(lead.niche)}>{lead.niche}</Badge>
       </div>
-      <div className="truncate text-zinc-300">{lead.country}</div>
+      <div className="truncate text-ink-muted">{lead.country}</div>
       <div className="hidden lg:block">
         {lead.phone ? (
           <a
             href={`tel:${lead.phone}`}
-            className="font-mono tabular-nums text-indigo-400 hover:underline"
+            className="font-mono tabular-nums text-marker hover:underline"
             onClick={(event) => event.stopPropagation()}
           >
             {lead.phone}
           </a>
         ) : (
-          <span className="text-zinc-500">—</span>
+          <span className="text-ink-muted">—</span>
         )}
       </div>
-      <div className="hidden xl:block truncate text-zinc-400">
+      <div className="hidden xl:block truncate text-ink-muted">
         <Tooltip>
           <TooltipTrigger asChild>
             <span className="cursor-default">{lead.address ?? '—'}</span>
@@ -127,7 +127,7 @@ function VirtualRow({
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`Open ${lead.name} on maps`}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-indigo-400"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-muted transition-colors hover:bg-paper-deep hover:text-marker"
           onClick={(event) => event.stopPropagation()}
         >
           <ExternalLink className="h-4 w-4" />
@@ -141,11 +141,11 @@ function PanelLeadCard({ lead }: { lead: Lead }) {
   return (
     <article
       data-testid="panel-lead-card"
-      className="rounded-lg border border-zinc-800/80 bg-zinc-900/50 p-4"
+      className="rounded-lg border border-ink bg-paper-deep p-4"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <h3 className="text-base font-semibold leading-snug text-zinc-50 break-words">
+          <h3 className="text-base font-semibold leading-snug text-ink break-words">
             {lead.name}
           </h3>
           <div className="mt-2">
@@ -157,7 +157,7 @@ function PanelLeadCard({ lead }: { lead: Lead }) {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`Open ${lead.name} on maps`}
-          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-zinc-700 text-zinc-300 transition-colors hover:border-teal-500/40 hover:bg-zinc-800 hover:text-teal-300"
+          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-ink text-ink-muted transition-colors hover:border-marker hover:bg-paper-deep hover:text-marker"
         >
           <ExternalLink className="h-4 w-4" />
         </a>
@@ -165,33 +165,33 @@ function PanelLeadCard({ lead }: { lead: Lead }) {
 
       <dl className="mt-4 space-y-3 text-sm">
         <div>
-          <dt className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">
+          <dt className="text-[11px] font-medium uppercase tracking-[0.12em] text-ink-muted">
             Region
           </dt>
-          <dd className="mt-1 text-zinc-200">{lead.country}</dd>
+          <dd className="mt-1 text-ink">{lead.country}</dd>
         </div>
         <div>
-          <dt className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">
+          <dt className="text-[11px] font-medium uppercase tracking-[0.12em] text-ink-muted">
             Phone
           </dt>
           <dd className="mt-1">
             {lead.phone ? (
               <a
                 href={`tel:${lead.phone}`}
-                className="font-mono tabular-nums text-teal-300 hover:underline"
+                className="font-mono tabular-nums text-marker hover:underline"
               >
                 {lead.phone}
               </a>
             ) : (
-              <span className="text-zinc-500">—</span>
+              <span className="text-ink-muted">—</span>
             )}
           </dd>
         </div>
         <div>
-          <dt className="text-[11px] font-medium uppercase tracking-[0.12em] text-zinc-500">
+          <dt className="text-[11px] font-medium uppercase tracking-[0.12em] text-ink-muted">
             Address
           </dt>
-          <dd className="mt-1 break-words leading-relaxed text-zinc-300">
+          <dd className="mt-1 break-words leading-relaxed text-ink-muted">
             {lead.address ?? '—'}
           </dd>
         </div>
@@ -225,8 +225,8 @@ function PanelLeadList({
         data-testid="prospect-table"
         className="flex flex-col gap-3"
       >
-        <div className="flex flex-wrap items-center gap-2 border-b border-zinc-800 pb-3">
-          <span className="mr-1 text-[11px] uppercase tracking-wider text-zinc-500">
+        <div className="flex flex-wrap items-center gap-2 border-b border-ink pb-3">
+          <span className="mr-1 text-[11px] uppercase tracking-wider text-ink-muted">
             Sort
           </span>
           {(
@@ -243,8 +243,8 @@ function PanelLeadList({
               className={cn(
                 'inline-flex items-center rounded-md border px-2.5 py-1 text-xs transition-colors',
                 sortBy === column
-                  ? 'border-teal-500/40 bg-teal-500/10 text-teal-300'
-                  : 'border-zinc-700 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200'
+                  ? 'border-marker bg-marker/15 text-marker'
+                  : 'border-ink text-ink-muted hover:border-marker hover:text-ink'
               )}
             >
               {label}
@@ -258,7 +258,7 @@ function PanelLeadList({
         </div>
 
         {leads.length === 0 ? (
-          <div className="p-6 text-center text-sm text-zinc-500">
+          <div className="p-6 text-center text-sm text-ink-muted">
             No leads match the current filters.
           </div>
         ) : (
@@ -291,7 +291,7 @@ export const ProspectMatrixTable = memo(function ProspectMatrixTable({
         </h2>
         <div
           data-testid="prospect-table"
-          className="overflow-hidden rounded-lg border border-zinc-800"
+          className="overflow-hidden rounded-lg border border-ink"
         >
           {Array.from({ length: 8 }).map((_, index) => (
             <Skeleton key={index} className="mb-2 h-12 w-full rounded-none" />
@@ -320,10 +320,10 @@ export const ProspectMatrixTable = memo(function ProspectMatrixTable({
         </h2>
         <div
           data-testid="prospect-table"
-          className="overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950"
+          className="overflow-hidden rounded-lg border border-ink bg-paper"
         >
           <Table role="table" aria-label="Lead information table">
-            <TableHeader className="sticky top-0 z-10 bg-zinc-900">
+            <TableHeader className="sticky top-0 z-10 bg-paper-deep">
               <TableRow className="hover:bg-transparent">
                 <TableHead scope="col">
                   <button
@@ -379,7 +379,7 @@ export const ProspectMatrixTable = memo(function ProspectMatrixTable({
           </Table>
 
           {leads.length === 0 ? (
-            <div className="p-8 text-center text-sm text-zinc-500">
+            <div className="p-8 text-center text-sm text-ink-muted">
               No leads match the current filters.
             </div>
           ) : (

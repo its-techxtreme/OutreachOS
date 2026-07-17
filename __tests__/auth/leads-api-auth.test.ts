@@ -5,9 +5,11 @@ jest.mock('@/lib/supabase-server', () => ({
   getSupabaseServer: jest.fn(() => ({
     from: jest.fn(() => ({
       select: jest.fn(() => ({
-        order: jest.fn(async () => ({
-          data: [],
-          error: null,
+        eq: jest.fn(() => ({
+          order: jest.fn(async () => ({
+            data: [],
+            error: null,
+          })),
         })),
       })),
     })),

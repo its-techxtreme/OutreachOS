@@ -62,6 +62,28 @@ describe('AuthService', () => {
     await expect(service.getCurrentSession()).resolves.toBeNull();
   });
 
+  it('treats refresh races as soft session misses', async () => {
+    const client = createMockClient({
+      getSession: jest.fn().mockResolvedValue({
+        data: { session: null },
+        error: {
+          message:
+            'Refresh result discarded: session state changed mid-flight (e.g., concurrent signOut)',
+        },
+      }),
+    });
+    const service = new AuthService(client as never);
+    await expect(service.getCurrentSession()).resolves.toBeNull();
+  });
+
+  it('treats network fetch failures as soft session misses', async () => {
+    const client = createMockClient({
+      getSession: jest.fn().mockRejectedValue(new TypeError('Failed to fetch')),
+    });
+    const service = new AuthService(client as never);
+    await expect(service.getCurrentSession()).resolves.toBeNull();
+  });
+
   it('requests password reset with redirect URL', async () => {
     const resetPasswordForEmail = jest
       .fn()

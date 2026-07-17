@@ -19,6 +19,20 @@ function getAppUrl(): string {
   );
 }
 
+/** Supabase auth races / network blips — not actionable app bugs. */
+function isBenignSessionError(message: string): boolean {
+  const normalized = message.toLowerCase();
+  return (
+    normalized.includes('refresh result discarded') ||
+    normalized.includes('session state changed mid-flight') ||
+    normalized.includes('failed to fetch') ||
+    normalized.includes('networkerror') ||
+    normalized.includes('abort') ||
+    normalized.includes('auth session missing') ||
+    normalized.includes('not authenticated')
+  );
+}
+
 export class AuthService {
   readonly supabase: SupabaseClient<Database>;
 
@@ -56,6 +70,60 @@ export class AuthService {
     return data;
   }
 
+  async signUp(email: string, password: string) {
+    const validation = PasswordPolicyService.validatePassword(password, {
+      email,
+    });
+
+    if (!validation.isValid) {
+      throw new Error(validation.errors.join('. '));
+    }
+
+    const { data, error } = await this.supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${getAppUrl()}/auth/callback?next=/dashboard`,
+      },
+    });
+
+    if (error) {
+      logger.warn('Sign up failed', {
+        email: maskEmail(email),
+        error: error.message,
+      });
+      SecurityLogger.log(SecurityEventType.AUTH_FAILURE, {
+        message: error.message,
+        email: maskEmail(email),
+      });
+      throw error;
+    }
+
+    logger.info('User signed up', {
+      userId: data.user?.id,
+      email: maskEmail(email),
+      needsEmailConfirmation: !data.session,
+    });
+
+    return data;
+  }
+
+  async signInWithGoogle() {
+    const { data, error } = await this.supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${getAppUrl()}/auth/callback?next=/dashboard`,
+      },
+    });
+
+    if (error) {
+      logger.warn('Google OAuth start failed', { error: error.message });
+      throw error;
+    }
+
+    return data;
+  }
+
   async signOut() {
     const { error } = await this.supabase.auth.signOut();
 
@@ -71,41 +139,79 @@ export class AuthService {
   }
 
   async getCurrentSession(): Promise<Session | null> {
-    const {
-      data: { session },
-      error,
-    } = await this.supabase.auth.getSession();
+    try {
+      const {
+        data: { session },
+        error,
+      } = await this.supabase.auth.getSession();
 
-    if (error) {
-      logger.error('Failed to get session', {
-        error: error.message,
-      });
+      if (error) {
+        if (isBenignSessionError(error.message)) {
+          logger.warn('Session read skipped (transient)', {
+            error: error.message,
+          });
+          return null;
+        }
+        logger.error('Failed to get session', {
+          error: error.message,
+        });
+        return null;
+      }
+
+      return session;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      if (isBenignSessionError(message)) {
+        logger.warn('Session read skipped (transient)', { error: message });
+        return null;
+      }
+      logger.error('Failed to get session', { error: message });
       return null;
     }
-
-    return session;
   }
 
   async getCurrentUser(): Promise<User | null> {
-    const {
-      data: { user },
-      error,
-    } = await this.supabase.auth.getUser();
+    try {
+      const {
+        data: { user },
+        error,
+      } = await this.supabase.auth.getUser();
 
-    if (error) {
-      logger.error('Failed to get user', {
-        error: error.message,
-      });
+      if (error) {
+        if (isBenignSessionError(error.message)) {
+          logger.warn('User read skipped (transient)', {
+            error: error.message,
+          });
+          return null;
+        }
+        logger.error('Failed to get user', {
+          error: error.message,
+        });
+        return null;
+      }
+
+      return user;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      if (isBenignSessionError(message)) {
+        logger.warn('User read skipped (transient)', { error: message });
+        return null;
+      }
+      logger.error('Failed to get user', { error: message });
       return null;
     }
-
-    return user;
   }
 
   async refreshSession() {
     const { data, error } = await this.supabase.auth.refreshSession();
 
     if (error) {
+      if (isBenignSessionError(error.message)) {
+        logger.warn('Session refresh skipped (transient)', {
+          error: error.message,
+        });
+        return null;
+      }
       logger.error('Failed to refresh session', {
         error: error.message,
       });

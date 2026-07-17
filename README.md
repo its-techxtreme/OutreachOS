@@ -42,7 +42,9 @@ The app runs on Vercel. Auth and data live in Supabase.
 You do not need to clone the repo to click around.
 
 1. Open **[https://outreachos-online.vercel.app](https://outreachos-online.vercel.app)**
-2. Sign in with the public demo account:
+2. Click **Sign in as Demo** on the landing page (or login screen) — no password typing required.
+
+Optional manual credentials (same shared demo account):
 
 
 | Field    | Value                     |
@@ -59,10 +61,14 @@ You do not need to clone the repo to click around.
 
 **What the demo user cannot do**
 
-- See the full lead database (demo is capped to **100** mixed contacts)  
+- See other users’ private leads (demo is capped to **100** curated contacts)  
 - Change security settings, delete leads, or use admin tools
 
-That keeps the hosted app useful for reviewers without exposing the full production pool.
+### Create your own account
+
+- **Sign up** with email + password (email verification required) or **Google**
+- New accounts start with an **empty** personal lead pool
+- Free-tier caps: **500** leads · **10** imports/day · **200** rows per import
 
 ---
 

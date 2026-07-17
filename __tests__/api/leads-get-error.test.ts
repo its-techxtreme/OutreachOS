@@ -15,9 +15,11 @@ describe('GET /api/leads error handling', () => {
     mockedGetSupabaseServer.mockReturnValue({
       from: jest.fn(() => ({
         select: jest.fn(() => ({
-          order: jest.fn(async () => ({
-            data: null,
-            error: { message: 'Database unavailable' },
+          eq: jest.fn(() => ({
+            order: jest.fn(async () => ({
+              data: null,
+              error: { message: 'Database unavailable' },
+            })),
           })),
         })),
       })),

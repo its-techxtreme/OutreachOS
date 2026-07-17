@@ -47,11 +47,15 @@ async function mapWithConcurrency<T, R>(
 }
 
 /**
- * Normalize Excel rows, dedupe by maps_url within the file, then insert.
+ * Normalize Excel rows, dedupe by maps_url within the file, then insert for owner.
  */
 export async function importValidatedLeads(
   rows: RawImportRow[],
-  options?: { nicheDefault?: string; countryDefault?: string }
+  options: {
+    ownerId: string;
+    nicheDefault?: string;
+    countryDefault?: string;
+  }
 ): Promise<ImportLeadsSummary> {
   const errors: ImportRowError[] = [];
   const leads: Array<{ lead: ValidatedLead; rowNumber: number }> = [];
@@ -103,6 +107,7 @@ export async function importValidatedLeads(
         maps_url: lead.maps_url,
         phone: lead.phone,
         address: lead.address,
+        owner_id: options.ownerId,
       };
 
       try {

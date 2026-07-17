@@ -5,6 +5,7 @@ import {
   unauthorizedJsonResponse,
 } from '@/lib/auth/require-session';
 import { RBACService } from '@/lib/auth/rbac';
+import { ensureDefaultUserRole } from '@/lib/auth/ensure-role';
 import { getDemoSampleLeadIds } from '@/lib/demo/sample-leads';
 import { LeadSearchService, type LeadsQueryParams } from '@/lib/search';
 import { getSupabaseServer } from '@/lib/supabase-server';
@@ -50,16 +51,19 @@ function parseQueryParams(request: NextRequest): LeadsQueryParams {
 
 export async function GET(request?: NextRequest): Promise<NextResponse> {
   try {
-    const user = await getServerAuthUser();
-    if (!user) {
+    const rawUser = await getServerAuthUser();
+    if (!rawUser) {
       return unauthorizedJsonResponse();
     }
 
+    const user = await ensureDefaultUserRole(rawUser);
     const supabase = getSupabaseServer();
     const params: LeadsQueryParams = request ? parseQueryParams(request) : {};
 
     if (RBACService.isDemoUser(user)) {
       params.allowedLeadIds = await getDemoSampleLeadIds(supabase);
+    } else {
+      params.ownerId = user.id;
     }
 
     const hasPagination =
@@ -73,6 +77,10 @@ export async function GET(request?: NextRequest): Promise<NextResponse> {
         params.endDate
     );
 
+    // Paginated / filtered / demo-scoped queries go through the search service.
+    // Unscoped owner dashboard loads need the full personal pool (not the
+    // default pageSize of 100), so skip the search service when the client
+    // asks for everything.
     if (hasPagination || hasFilters || params.allowedLeadIds) {
       const result = await LeadSearchService.queryLeads(supabase, params);
 
@@ -91,6 +99,7 @@ export async function GET(request?: NextRequest): Promise<NextResponse> {
     const { data, error } = await supabase
       .from('leads')
       .select('*')
+      .eq('owner_id', user.id)
       .order('created_at', { ascending: false });
 
     if (error) {

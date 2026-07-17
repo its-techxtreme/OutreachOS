@@ -141,10 +141,10 @@ export const rateLimiters = {
     maxRequests: 100,
     keyGenerator: (id) => `public:${id}`,
   }),
-  /** Excel lead imports — default tight limit for non-admin creators. */
+  /** Excel lead imports — free users: 10 / day. */
   leadImport: new AdvancedRateLimiter({
-    windowMs: 15 * 60_000,
-    maxRequests: 5,
+    windowMs: 24 * 60 * 60_000,
+    maxRequests: 10,
     keyGenerator: (id) => `lead-import:${id}`,
   }),
   /** Admin / manager Excel imports — 200 files per minute. */
@@ -158,6 +158,12 @@ export const rateLimiters = {
     windowMs: 60 * 60_000,
     maxRequests: 1,
     keyGenerator: (id) => `lead-import-demo:${id}`,
+  }),
+  /** One-click demo sign-in — abuse protection. */
+  demoSignIn: new AdvancedRateLimiter({
+    windowMs: 15 * 60_000,
+    maxRequests: 20,
+    keyGenerator: (id) => `demo-signin:${id}`,
   }),
 };
 

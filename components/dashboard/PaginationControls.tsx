@@ -38,15 +38,15 @@ export const PaginationControls = memo(function PaginationControls({
   return (
     <nav
       aria-label="Lead table pagination"
-      className="flex flex-col items-center justify-between gap-3 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-3 sm:flex-row"
+      className="flex flex-col items-center justify-between gap-3 rounded-lg border border-ink bg-paper-deep px-4 py-3 sm:flex-row"
     >
-      <p className="text-sm text-zinc-400">
+      <p className="text-sm text-ink-muted">
         Showing{' '}
-        <span className="font-medium text-zinc-200">
+        <span className="font-medium text-ink">
           {start.toLocaleString()}–{end.toLocaleString()}
         </span>{' '}
         of{' '}
-        <span className="font-medium text-zinc-200">
+        <span className="font-medium text-ink">
           {totalCount.toLocaleString()}
         </span>
       </p>
@@ -64,7 +64,7 @@ export const PaginationControls = memo(function PaginationControls({
           Previous
         </Button>
 
-        <span className="min-w-24 text-center text-sm tabular-nums text-zinc-300">
+        <span className="min-w-24 text-center text-sm tabular-nums text-ink-muted">
           Page {currentPage} of {totalPages}
         </span>
 
@@ -90,7 +90,7 @@ export const PaginationControls = memo(function PaginationControls({
             id="page-jump"
             value={currentPage}
             onChange={(event) => onPageChange(Number.parseInt(event.target.value, 10))}
-            className="rounded-md border border-zinc-700 bg-zinc-950 px-2 py-1 text-sm text-zinc-200"
+            className="rounded-md border border-ink bg-paper px-2 py-1 text-sm text-ink"
             aria-label="Jump to page"
           >
             {Array.from({ length: totalPages }, (_, index) => index + 1).map(

@@ -50,7 +50,7 @@ export function RouteGuard({
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-950">
+      <div className="paper-texture flex min-h-screen items-center justify-center">
         <LoadingSpinner size="lg" />
       </div>
     );

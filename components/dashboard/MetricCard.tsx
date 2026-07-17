@@ -31,7 +31,7 @@ export const MetricCard = memo(function MetricCard({
   if (isLoading) {
     return (
       <div
-        className="rounded-lg border border-zinc-800/80 bg-zinc-900/40 px-5 py-4 backdrop-blur-sm"
+        className="doodle-border-soft bg-paper-deep px-5 py-4"
         aria-busy="true"
       >
         <Skeleton className="h-3 w-28" />
@@ -42,10 +42,10 @@ export const MetricCard = memo(function MetricCard({
 
   return (
     <div
-      className="rounded-lg border border-zinc-800/80 bg-zinc-900/40 px-5 py-4 backdrop-blur-sm transition-colors hover:border-teal-500/30 hover:bg-zinc-900/60"
+      className="doodle-border-soft bg-paper px-5 py-4 transition-colors hover:bg-highlighter/20"
       aria-label={`${label}: ${value.toLocaleString()}`}
     >
-      <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-500">
+      <p className="font-label text-[11px] font-medium uppercase tracking-[0.14em] text-ink-muted">
         {label}
       </p>
       <motion.p
@@ -53,7 +53,7 @@ export const MetricCard = memo(function MetricCard({
         initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25 }}
-        className="mt-2 font-display text-3xl font-bold tabular-nums tracking-tight text-zinc-50"
+        className="mt-2 font-display text-3xl font-bold tabular-nums tracking-tight text-ink"
       >
         {value.toLocaleString()}
       </motion.p>
@@ -61,9 +61,9 @@ export const MetricCard = memo(function MetricCard({
         <p
           className={cn(
             'mt-2 text-xs tabular-nums',
-            changeType === 'increase' && 'text-emerald-400',
-            changeType === 'decrease' && 'text-red-400',
-            changeType === 'neutral' && 'text-zinc-500'
+            changeType === 'increase' && 'text-success',
+            changeType === 'decrease' && 'text-danger',
+            changeType === 'neutral' && 'text-ink-muted'
           )}
         >
           {formatChange(change, changeType)}
