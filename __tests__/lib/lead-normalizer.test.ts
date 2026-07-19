@@ -97,4 +97,24 @@ describe('lead-normalizer', () => {
     expect(cleanText('  ')).toBeNull();
     expect(cleanText('Acme')).toBe('Acme');
   });
+
+  it('infers India when Country is missing but phone is +91', () => {
+    const result = normalizeImportRow(
+      {
+        'Business Name': 'STAADIL DESIGN',
+        Niche: 'Interior Designing',
+        Address: 'Bangalore, Karnataka',
+        'Mobile No. (verified)': '9008852593',
+        'Google maps link':
+          'https://www.google.com/maps/search/?api=1&query=STAADIL+DESIGN+Bangalore+India',
+      },
+      2
+    );
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.lead.country).toBe('India');
+      expect(result.lead.phone).toBe('+91 9008852593');
+    }
+  });
 });

@@ -157,7 +157,6 @@ export function DashboardView() {
 
   const handleSelectLead = useCallback((lead: Lead) => {
     setSelectedLead(lead);
-    setScriptsOpen(true);
     playSound('pop');
   }, []);
 

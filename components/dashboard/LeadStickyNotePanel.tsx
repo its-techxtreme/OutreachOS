@@ -1,7 +1,14 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ExternalLink, Minimize2, StickyNote, X } from 'lucide-react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
+import { ExternalLink, GripVertical, Minimize2, StickyNote, X } from 'lucide-react';
 
 import { StatusChips } from '@/components/dashboard/StatusChips';
 import { Button } from '@/components/ui/button';
@@ -16,6 +23,8 @@ import {
 import { cn } from '@/lib/utils';
 import type { Lead, LeadStatus } from '@/types/database.types';
 
+const POSITION_STORAGE_KEY = 'outreachos-sticky-scripts-pos';
+
 export interface LeadStickyNotePanelProps {
   open: boolean;
   onClose: () => void;
@@ -26,6 +35,50 @@ export interface LeadStickyNotePanelProps {
 }
 
 type ScriptTab = 'general' | string;
+
+type PanelPosition = { left: number; top: number };
+
+function clampPosition(
+  pos: PanelPosition,
+  width: number,
+  height: number
+): PanelPosition {
+  if (typeof window === 'undefined') {
+    return pos;
+  }
+  const margin = 8;
+  const maxLeft = Math.max(margin, window.innerWidth - width - margin);
+  const maxTop = Math.max(margin, window.innerHeight - Math.min(height, 120) - margin);
+  return {
+    left: Math.min(Math.max(margin, pos.left), maxLeft),
+    top: Math.min(Math.max(margin, pos.top), maxTop),
+  };
+}
+
+function readStoredPosition(): PanelPosition | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+  try {
+    const raw = sessionStorage.getItem(POSITION_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<PanelPosition>;
+    if (typeof parsed.left !== 'number' || typeof parsed.top !== 'number') {
+      return null;
+    }
+    return { left: parsed.left, top: parsed.top };
+  } catch {
+    return null;
+  }
+}
+
+function persistPosition(pos: PanelPosition) {
+  try {
+    sessionStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify(pos));
+  } catch {
+    // ignore quota / private mode
+  }
+}
 
 export function LeadStickyNotePanel({
   open,
@@ -43,6 +96,26 @@ export function LeadStickyNotePanel({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [position, setPosition] = useState<PanelPosition | null>(null);
+  const [dragging, setDragging] = useState(false);
+
+  const panelRef = useRef<HTMLElement | null>(null);
+  const dragOffsetRef = useRef({ x: 0, y: 0 });
+  const dragOriginRef = useRef<PanelPosition>({ left: 0, top: 0 });
+  const positionRef = useRef<PanelPosition | null>(null);
+  const draggingRef = useRef(false);
+  const didDragRef = useRef(false);
+
+  useEffect(() => {
+    positionRef.current = position;
+  }, [position]);
+
+  useEffect(() => {
+    const stored = readStoredPosition();
+    if (stored) {
+      setPosition(stored);
+    }
+  }, []);
 
   const nicheTabs = useMemo(() => {
     const map = new Map<string, string>();
@@ -178,6 +251,86 @@ export function LeadStickyNotePanel({
     }
   }, [activeKey]);
 
+  const beginDrag = useCallback((event: ReactPointerEvent<HTMLElement>) => {
+    if (
+      (event.target as HTMLElement).closest(
+        'button[aria-label],a,input,textarea,select'
+      )
+    ) {
+      return;
+    }
+    const el = panelRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    dragOffsetRef.current = {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+    };
+    const next = { left: rect.left, top: rect.top };
+    positionRef.current = next;
+    dragOriginRef.current = next;
+    didDragRef.current = false;
+    draggingRef.current = true;
+    setPosition(next);
+    setDragging(true);
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  }, []);
+
+  const onDragMove = useCallback((event: ReactPointerEvent<HTMLElement>) => {
+    if (!draggingRef.current) return;
+    if (!Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) {
+      return;
+    }
+    event.preventDefault();
+    const el = panelRef.current;
+    const width = el?.offsetWidth ?? 384;
+    const height = el?.offsetHeight ?? 280;
+    const next = clampPosition(
+      {
+        left: event.clientX - dragOffsetRef.current.x,
+        top: event.clientY - dragOffsetRef.current.y,
+      },
+      width,
+      height
+    );
+    const origin = dragOriginRef.current;
+    if (Math.hypot(next.left - origin.left, next.top - origin.top) > 4) {
+      didDragRef.current = true;
+    }
+    positionRef.current = next;
+    setPosition(next);
+  }, []);
+
+  const endDrag = useCallback((event?: ReactPointerEvent<HTMLElement>) => {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
+    setDragging(false);
+    if (event?.pointerId != null) {
+      try {
+        event.currentTarget.releasePointerCapture?.(event.pointerId);
+      } catch {
+        // already released
+      }
+    }
+    const latest = positionRef.current;
+    if (latest) {
+      persistPosition(latest);
+    }
+  }, []);
+
+  const setPanelNode = useCallback((node: HTMLElement | null) => {
+    panelRef.current = node;
+  }, []);
+
+  const positionStyle = position
+    ? {
+        left: position.left,
+        top: position.top,
+        right: 'auto' as const,
+        bottom: 'auto' as const,
+      }
+    : undefined;
+
   if (!open) {
     return null;
   }
@@ -185,11 +338,25 @@ export function LeadStickyNotePanel({
   if (minimized) {
     return (
       <button
+        ref={setPanelNode}
         type="button"
         data-testid="sticky-note-minimized"
-        onClick={() => setMinimized(false)}
-        className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-md border-2 border-ink bg-highlighter px-3 py-2 text-sm font-semibold text-ink shadow-[4px_4px_0_0_rgba(28,25,23,0.85)]"
+        onClick={() => {
+          if (didDragRef.current) return;
+          setMinimized(false);
+        }}
+        onPointerDown={beginDrag}
+        onPointerMove={onDragMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        style={positionStyle}
+        className={cn(
+          'fixed z-[60] flex cursor-grab items-center gap-2 rounded-md border-2 border-ink bg-highlighter px-3 py-2 text-sm font-semibold text-ink shadow-[4px_4px_0_0_rgba(28,25,23,0.85)] active:cursor-grabbing',
+          !position && 'bottom-4 right-4',
+          dragging && 'cursor-grabbing'
+        )}
       >
+        <GripVertical className="h-4 w-4 opacity-60" aria-hidden />
         <StickyNote className="h-4 w-4" />
         Scripts
       </button>
@@ -198,20 +365,40 @@ export function LeadStickyNotePanel({
 
   return (
     <aside
+      ref={setPanelNode}
       data-testid="lead-sticky-note-panel"
       aria-label="Call script sticky notes"
+      style={positionStyle}
       className={cn(
-        'fixed bottom-4 right-4 z-50 flex w-[min(100vw-1.5rem,22rem)] flex-col gap-3',
+        'fixed z-[60] flex w-[min(100vw-1.5rem,22rem)] flex-col gap-3',
         'rotate-[-0.6deg] rounded-md border-2 border-ink bg-highlighter p-3',
-        'shadow-[6px_7px_0_0_rgba(28,25,23,0.9)] sm:w-[24rem]'
+        'shadow-[6px_7px_0_0_rgba(28,25,23,0.9)] sm:w-[24rem]',
+        !position && 'bottom-4 right-4'
       )}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <p className="font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-ink/70">
-            Sticky scripts
-          </p>
-          <h2 className="text-base font-semibold text-ink">Call pitch pad</h2>
+      <div
+        data-testid="sticky-drag-handle"
+        onPointerDown={beginDrag}
+        onPointerMove={onDragMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        className={cn(
+          'flex cursor-grab items-start justify-between gap-2 select-none touch-none',
+          dragging && 'cursor-grabbing'
+        )}
+        title="Drag to move"
+      >
+        <div className="flex min-w-0 items-start gap-1.5">
+          <GripVertical
+            className="mt-0.5 h-4 w-4 shrink-0 text-ink/50"
+            aria-hidden
+          />
+          <div>
+            <p className="font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-ink/70">
+              Sticky scripts
+            </p>
+            <h2 className="text-base font-semibold text-ink">Call pitch pad</h2>
+          </div>
         </div>
         <div className="flex items-center gap-1">
           <button

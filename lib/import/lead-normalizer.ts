@@ -219,13 +219,25 @@ export function normalizeImportRow(
 
   const niche =
     cleanText(getByAliases(raw, NICHE_KEYS)) ?? defaults?.niche ?? 'General';
-  const country =
-    cleanText(getByAliases(raw, COUNTRY_KEYS)) ??
-    defaults?.country ??
-    'Unknown';
   const address = cleanText(getByAliases(raw, ADDRESS_KEYS));
   const phone = cleanPhone(getByAliases(raw, PHONE_KEYS));
   const rawMaps = cleanText(getByAliases(raw, MAPS_KEYS));
+
+  // Many India scrapes omit a Country column but ship +91 mobiles / maps queries.
+  let country =
+    cleanText(getByAliases(raw, COUNTRY_KEYS)) ?? defaults?.country ?? null;
+  if (!country && phone?.startsWith('+91')) {
+    country = 'India';
+  }
+  if (
+    !country &&
+    rawMaps &&
+    /\bindia\b/i.test(decodeURIComponent(rawMaps.replace(/\+/g, ' ')))
+  ) {
+    country = 'India';
+  }
+  country = country ?? 'Unknown';
+
   const mapsUrl = resolveMapsUrl(rawMaps, name, address, country);
 
   const parsed = LeadSchema.safeParse({

@@ -63,3 +63,6 @@ lighthouse-report.html
 playwright-report/
 test-results/
 blob-report/
+
+# local scratch / private import samples (may contain real lead PII)
+/tmp/

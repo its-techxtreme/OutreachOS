@@ -3,6 +3,7 @@ import ExcelJS from 'exceljs';
 import { MAX_IMPORT_ROWS } from '@/lib/import/constants';
 import { ImportFileError } from '@/lib/import/file-guards';
 import type { RawImportRow } from '@/lib/import/lead-normalizer';
+import { normalizeOoxmlBuffer } from '@/lib/import/normalize-ooxml';
 
 export { assertSafeImportFile, ImportFileError } from '@/lib/import/file-guards';
 
@@ -53,22 +54,45 @@ function rowHasContent(values: unknown[]): boolean {
   });
 }
 
+async function loadWorkbook(buffer: Buffer): Promise<ExcelJS.Workbook> {
+  const workbook = new ExcelJS.Workbook();
+  // exceljs accepts Buffer; cast keeps TS happy across Node buffer typings
+  await workbook.xlsx.load(buffer as unknown as ExcelJS.Buffer);
+  return workbook;
+}
+
 /**
  * Parse the first worksheet of an Excel workbook into header-keyed row objects.
  */
 export async function parseExcelBuffer(
   buffer: Buffer
 ): Promise<{ headers: string[]; rows: RawImportRow[] }> {
-  const workbook = new ExcelJS.Workbook();
+  let workbook: ExcelJS.Workbook;
 
   try {
-    // exceljs accepts Buffer; cast keeps TS happy across Node buffer typings
-    await workbook.xlsx.load(buffer as unknown as ExcelJS.Buffer);
+    workbook = await loadWorkbook(buffer);
   } catch {
-    throw new ImportFileError(
-      'Unable to parse Excel file. Upload a valid .xlsx workbook.',
-      'parse_failed'
-    );
+    try {
+      // Some exporters use prefixed spreadsheetml namespaces ExcelJS rejects.
+      const normalized = await normalizeOoxmlBuffer(buffer);
+      workbook = await loadWorkbook(normalized);
+    } catch {
+      throw new ImportFileError(
+        'Unable to parse Excel file. Upload a valid .xlsx workbook.',
+        'parse_failed'
+      );
+    }
+  }
+
+  // Prefixed-namespace workbooks sometimes "load" without throwing but leave
+  // worksheets empty — normalize and retry when that happens.
+  if (!workbook.worksheets[0]) {
+    try {
+      const normalized = await normalizeOoxmlBuffer(buffer);
+      workbook = await loadWorkbook(normalized);
+    } catch {
+      throw new ImportFileError('Workbook has no sheets', 'empty');
+    }
   }
 
   const sheet = workbook.worksheets[0];
