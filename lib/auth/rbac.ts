@@ -73,7 +73,6 @@ const ROUTE_PERMISSIONS: Record<string, Permission[]> = {
   '/admin/settings': [Permission.SYSTEM_SETTINGS],
   '/admin/logs': [Permission.SYSTEM_LOGS],
   '/admin/metrics': [Permission.SYSTEM_METRICS],
-  '/settings': [Permission.SYSTEM_SETTINGS],
 };
 
 function getAppMetadataRoles(user: unknown): string[] {

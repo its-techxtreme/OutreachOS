@@ -1,17 +1,28 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { logger } from '@/lib/logger';
+import { userNeedsUsername } from '@/lib/validation/username-schema';
 
 interface RouteGuardProps {
   children: React.ReactNode;
   requireAuth?: boolean;
   redirectTo?: string;
   roles?: string[];
+  /** When true (default), users without a username are sent to /auth/username */
+  requireUsername?: boolean;
+}
+
+function GuardSpinner() {
+  return (
+    <div className="paper-texture flex min-h-screen items-center justify-center">
+      <LoadingSpinner size="lg" />
+    </div>
+  );
 }
 
 export function RouteGuard({
@@ -19,9 +30,11 @@ export function RouteGuard({
   requireAuth = true,
   redirectTo = '/auth/login',
   roles = [],
+  requireUsername = true,
 }: RouteGuardProps) {
   const { user, session, loading } = useAuth();
   const router = useRouter();
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
     if (loading) {
@@ -29,7 +42,14 @@ export function RouteGuard({
     }
 
     if (requireAuth && !session) {
-      router.push(redirectTo);
+      setRedirecting(true);
+      router.replace(redirectTo);
+      return;
+    }
+
+    if (requireAuth && requireUsername && user && userNeedsUsername(user)) {
+      setRedirecting(true);
+      router.replace('/auth/username');
       return;
     }
 
@@ -43,21 +63,35 @@ export function RouteGuard({
           requiredRoles: roles,
           userRoles,
         });
-        router.push('/auth/unauthorized');
+        setRedirecting(true);
+        router.replace('/auth/unauthorized');
+        return;
       }
     }
-  }, [user, session, loading, requireAuth, redirectTo, roles, router]);
 
-  if (loading) {
-    return (
-      <div className="paper-texture flex min-h-screen items-center justify-center">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
+    setRedirecting(false);
+  }, [
+    user,
+    session,
+    loading,
+    requireAuth,
+    requireUsername,
+    redirectTo,
+    roles,
+    router,
+  ]);
+
+  if (loading || redirecting) {
+    return <GuardSpinner />;
   }
 
+  // Never return null — blank white page after soft login navigation.
   if (requireAuth && !session) {
-    return null;
+    return <GuardSpinner />;
+  }
+
+  if (requireAuth && requireUsername && user && userNeedsUsername(user)) {
+    return <GuardSpinner />;
   }
 
   return <>{children}</>;

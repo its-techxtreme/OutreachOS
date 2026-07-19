@@ -18,7 +18,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { StatusBadge } from '@/components/dashboard/StatusChips';
 import type { LeadSortColumn, SortDirection } from '@/lib/filter-leads';
+import { emitTutorialAction } from '@/lib/demo/tutorial-bus';
 import { getNicheVariant } from '@/lib/niche-colors';
 import { cn } from '@/lib/utils';
 import type { Lead } from '@/types/database.types';
@@ -80,7 +82,7 @@ function VirtualRow({
       style={style}
       {...ariaAttributes}
       className={cn(
-        'grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto] items-center border-b border-ink px-4 text-sm transition-colors hover:bg-paper-deep/50 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_auto] lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)_auto]',
+        'grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto_auto] items-center border-b border-ink px-4 text-sm transition-colors hover:bg-paper-deep/50 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_auto_auto] lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto_auto] xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,2fr)_auto_auto]',
         index % 2 === 1 && 'bg-paper-deep',
         onRowClick && 'cursor-pointer'
       )}
@@ -92,8 +94,14 @@ function VirtualRow({
         }
       }}
       tabIndex={onRowClick ? 0 : undefined}
+      data-selected={onRowClick ? undefined : undefined}
     >
-      <div className="truncate font-semibold text-ink">{lead.name}</div>
+      <div className="min-w-0">
+        <div className="truncate font-semibold text-ink">{lead.name}</div>
+        <div className="mt-0.5 md:hidden">
+          <StatusBadge status={lead.status} />
+        </div>
+      </div>
       <div className="hidden md:block">
         <Badge variant={getNicheVariant(lead.niche)}>{lead.niche}</Badge>
       </div>
@@ -121,14 +129,21 @@ function VirtualRow({
           )}
         </Tooltip>
       </div>
+      <div className="hidden md:flex justify-center">
+        <StatusBadge status={lead.status} />
+      </div>
       <div>
         <a
           href={lead.maps_url}
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`Open ${lead.name} on maps`}
+          data-tutorial="maps-link"
           className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-muted transition-colors hover:bg-paper-deep hover:text-marker"
-          onClick={(event) => event.stopPropagation()}
+          onClick={(event) => {
+            event.stopPropagation();
+            emitTutorialAction('open-maps');
+          }}
         >
           <ExternalLink className="h-4 w-4" />
         </a>
@@ -137,19 +152,38 @@ function VirtualRow({
   );
 }
 
-function PanelLeadCard({ lead }: { lead: Lead }) {
+function PanelLeadCard({
+  lead,
+  onClick,
+}: {
+  lead: Lead;
+  onClick?: (lead: Lead) => void;
+}) {
   return (
     <article
       data-testid="panel-lead-card"
-      className="rounded-lg border border-ink bg-paper-deep p-4"
+      className={cn(
+        'rounded-lg border border-ink bg-paper-deep p-4',
+        onClick && 'cursor-pointer hover:border-marker'
+      )}
+      onClick={() => onClick?.(lead)}
+      onKeyDown={(event) => {
+        if (onClick && (event.key === 'Enter' || event.key === ' ')) {
+          event.preventDefault();
+          onClick(lead);
+        }
+      }}
+      tabIndex={onClick ? 0 : undefined}
+      role={onClick ? 'button' : undefined}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <h3 className="text-base font-semibold leading-snug text-ink break-words">
             {lead.name}
           </h3>
-          <div className="mt-2">
+          <div className="mt-2 flex flex-wrap items-center gap-2">
             <Badge variant={getNicheVariant(lead.niche)}>{lead.niche}</Badge>
+            <StatusBadge status={lead.status} />
           </div>
         </div>
         <a
@@ -157,7 +191,9 @@ function PanelLeadCard({ lead }: { lead: Lead }) {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`Open ${lead.name} on maps`}
+          data-tutorial="maps-link"
           className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-ink text-ink-muted transition-colors hover:border-marker hover:bg-paper-deep hover:text-marker"
+          onClick={() => emitTutorialAction('open-maps')}
         >
           <ExternalLink className="h-4 w-4" />
         </a>
@@ -205,11 +241,13 @@ function PanelLeadList({
   sortBy,
   sortDirection,
   onSort,
+  onRowClick,
 }: {
   leads: Lead[];
   sortBy?: LeadSortColumn;
   sortDirection?: SortDirection;
   onSort: (column: LeadSortColumn) => void;
+  onRowClick?: (lead: Lead) => void;
 }) {
   const handleSort = useCallback(
     (column: LeadSortColumn) => () => onSort(column),
@@ -262,7 +300,9 @@ function PanelLeadList({
             No leads match the current filters.
           </div>
         ) : (
-          leads.map((lead) => <PanelLeadCard key={lead.id} lead={lead} />)
+          leads.map((lead) => (
+            <PanelLeadCard key={lead.id} lead={lead} onClick={onRowClick} />
+          ))
         )}
       </div>
     </section>
@@ -308,6 +348,7 @@ export const ProspectMatrixTable = memo(function ProspectMatrixTable({
         sortBy={sortBy}
         sortDirection={sortDirection}
         onSort={onSort}
+        onRowClick={onRowClick}
       />
     );
   }
@@ -372,6 +413,9 @@ export const ProspectMatrixTable = memo(function ProspectMatrixTable({
                 </TableHead>
                 <TableHead scope="col" className="hidden xl:table-cell">
                   Address
+                </TableHead>
+                <TableHead scope="col" className="hidden md:table-cell">
+                  Status
                 </TableHead>
                 <TableHead scope="col">Actions</TableHead>
               </TableRow>

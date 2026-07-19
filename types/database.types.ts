@@ -1,6 +1,8 @@
 export type LeadStatus =
   | 'New'
-  | 'Contacted'
+  | 'Called'
+  | 'No Answer'
+  | 'Callback'
   | 'Replied'
   | 'Converted'
   | 'Archived';
@@ -73,9 +75,131 @@ export interface Database {
           },
         ];
       };
+      profiles: {
+        Row: {
+          user_id: string;
+          username: string;
+          display_name: string | null;
+          quest_board_enabled: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          username: string;
+          display_name?: string | null;
+          quest_board_enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          username?: string;
+          display_name?: string | null;
+          quest_board_enabled?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      call_scripts: {
+        Row: {
+          id: number;
+          user_id: string;
+          script_key: string;
+          body: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: number;
+          user_id: string;
+          script_key: string;
+          body: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: number;
+          user_id?: string;
+          script_key?: string;
+          body?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      user_weekly_quests: {
+        Row: {
+          id: number;
+          user_id: string;
+          week_start: string;
+          quest_id: string;
+          progress: number;
+          target: number;
+          completed_at: string | null;
+          claimed_manual: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: number;
+          user_id: string;
+          week_start: string;
+          quest_id: string;
+          progress?: number;
+          target?: number;
+          completed_at?: string | null;
+          claimed_manual?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: number;
+          user_id?: string;
+          week_start?: string;
+          quest_id?: string;
+          progress?: number;
+          target?: number;
+          completed_at?: string | null;
+          claimed_manual?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      user_lead_status: {
+        Row: {
+          user_id: string;
+          lead_id: number;
+          status: LeadStatus;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          lead_id: number;
+          status: LeadStatus;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          lead_id?: number;
+          status?: LeadStatus;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
+      lookup_email_by_username: {
+        Args: { p_username: string };
+        Returns: string | null;
+      };
+      is_username_available: {
+        Args: { p_username: string };
+        Returns: boolean;
+      };
       search_leads_fuzzy: {
         Args: {
           search_term: string;

@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
 
+import { BrandLockup } from '@/components/brand/BrandLockup';
 import { DoodleDecor } from '@/components/landing/DoodleDecor';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { playSound } from '@/lib/sound';
 
 export function LoginForm() {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [demoLoading, setDemoLoading] = useState(false);
@@ -19,8 +20,6 @@ export function LoginForm() {
     error,
     clearError,
   } = useAuth();
-  const router = useRouter();
-  const searchParams = useSearchParams();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -28,10 +27,10 @@ export function LoginForm() {
     setIsSubmitting(true);
 
     try {
-      await signIn(email, password);
-      const redirectTo = searchParams.get('redirect') || '/dashboard';
-      router.push(redirectTo);
+      await signIn(identifier, password);
+      playSound('success');
     } catch {
+      playSound('soft');
       // Error via AuthProvider
     } finally {
       setIsSubmitting(false);
@@ -39,13 +38,13 @@ export function LoginForm() {
   };
 
   return (
-    <div className="auth-stage paper-texture flex min-h-screen items-center justify-center px-4 py-12">
+    <div className="auth-stage paper-texture flex min-h-screen items-center justify-center px-3 py-8 sm:px-4 sm:py-12">
       <DoodleDecor />
-      <div className="glass-panel relative z-10 w-full max-w-md p-8 md:p-10">
+      <div className="glass-panel relative z-10 w-full max-w-md p-5 sm:p-8 md:p-10">
         <div className="mb-6 text-center">
-          <p className="font-display text-4xl font-bold text-ink">
-            Outreach<span className="text-marker">OS</span>
-          </p>
+          <div className="flex justify-center">
+            <BrandLockup size="lg" href="/" />
+          </div>
           <p className="mt-2 text-sm text-ink-muted">
             Welcome back — grab your vault and keep dialing.
           </p>
@@ -65,20 +64,21 @@ export function LoginForm() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-1">
             <label
-              htmlFor="email"
+              htmlFor="identifier"
               className="font-label text-xs font-semibold uppercase tracking-wide text-ink-muted"
             >
-              Email
+              Email or username
             </label>
             <input
-              id="email"
-              type="email"
-              autoComplete="email"
+              id="identifier"
+              type="text"
+              autoComplete="username"
               data-testid="email-input"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              value={identifier}
+              onChange={(event) => setIdentifier(event.target.value)}
               className="doodle-input"
               required
+              spellCheck={false}
             />
           </div>
 
@@ -106,6 +106,7 @@ export function LoginForm() {
             disabled={isSubmitting}
             className="doodle-btn w-full rounded-md bg-coral/95 py-3 font-label text-sm font-bold uppercase tracking-wider text-ink disabled:opacity-60"
             data-testid="login-button"
+            onClick={() => playSound('tap')}
           >
             {isSubmitting ? 'Signing in…' : 'Sign in'}
           </button>
@@ -119,7 +120,10 @@ export function LoginForm() {
 
         <button
           type="button"
-          onClick={() => void signInWithGoogle()}
+          onClick={() => {
+            playSound('tap');
+            void signInWithGoogle();
+          }}
           className="doodle-btn mb-3 w-full rounded-md bg-white/55 py-3 font-label text-sm font-bold uppercase tracking-wider text-ink backdrop-blur-sm"
           data-testid="google-signin-button"
         >
@@ -130,6 +134,7 @@ export function LoginForm() {
           type="button"
           disabled={demoLoading}
           onClick={() => {
+            playSound('whoosh');
             setDemoLoading(true);
             void signInAsDemo().finally(() => setDemoLoading(false));
           }}
@@ -153,6 +158,30 @@ export function LoginForm() {
           >
             Create account
           </Link>
+        </p>
+        <p className="mt-4 text-center text-xs leading-relaxed text-ink-muted">
+          By signing in you continue under our{' '}
+          <Link
+            href="/terms"
+            className="underline decoration-marker underline-offset-2"
+          >
+            Terms
+          </Link>
+          ,{' '}
+          <Link
+            href="/privacy"
+            className="underline decoration-marker underline-offset-2"
+          >
+            Privacy Policy
+          </Link>
+          , and{' '}
+          <Link
+            href="/acceptable-use"
+            className="underline decoration-marker underline-offset-2"
+          >
+            Acceptable Use
+          </Link>
+          .
         </p>
       </div>
     </div>

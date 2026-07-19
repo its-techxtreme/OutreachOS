@@ -19,12 +19,14 @@ import {
   type GraphNode,
   type LeadGraph,
 } from '@/lib/vector-graph';
+import { emitTutorialAction } from '@/lib/demo/tutorial-bus';
 import type { LeadSortColumn, SortDirection } from '@/lib/filter-leads';
 import type { Lead } from '@/types/database.types';
 
 interface VectorVaultViewProps {
   leads: Lead[];
   isLoading?: boolean;
+  onLeadSelect?: (lead: Lead) => void;
 }
 
 interface SidebarState {
@@ -49,7 +51,11 @@ function matchesQuery(node: GraphNode, query: string): boolean {
   return false;
 }
 
-export function VectorVaultView({ leads, isLoading = false }: VectorVaultViewProps) {
+export function VectorVaultView({
+  leads,
+  isLoading = false,
+  onLeadSelect,
+}: VectorVaultViewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const graphRef = useRef<LeadGraph | null>(null);
@@ -224,8 +230,16 @@ export function VectorVaultView({ leads, isLoading = false }: VectorVaultViewPro
       });
       selectedRef.current = node;
       markDirty();
+      emitTutorialAction('open-vector-node');
+      if (onLeadSelect) {
+        if (node.lead) {
+          onLeadSelect(node.lead);
+        } else if (payload.leads.length === 1 && payload.leads[0]) {
+          onLeadSelect(payload.leads[0]);
+        }
+      }
     },
-    [markDirty]
+    [markDirty, onLeadSelect]
   );
 
   // Paint loop: only redraw when dirty or dragging — never remeasure/rebuild here
@@ -529,8 +543,9 @@ export function VectorVaultView({ leads, isLoading = false }: VectorVaultViewPro
     <section
       ref={containerRef}
       data-testid="vector-vault-view"
+      data-tutorial="vector-vault"
       aria-label="Vector vault graph view"
-      className="relative h-[70vh] min-h-[520px] w-full overflow-hidden rounded-xl border border-ink bg-paper"
+      className="relative h-[60vh] min-h-[360px] w-full overflow-hidden rounded-xl border border-ink bg-paper sm:h-[70vh] sm:min-h-[480px] md:min-h-[520px]"
     >
       {/* Absolute canvas so sizing never feeds back into layout */}
       <canvas
@@ -559,7 +574,7 @@ export function VectorVaultView({ leads, isLoading = false }: VectorVaultViewPro
         </p>
       </div>
 
-      <div className="absolute left-1/2 top-4 z-30 flex w-[min(440px,70%)] -translate-x-1/2 flex-col gap-2">
+      <div className="absolute left-1/2 top-3 z-30 flex w-[min(440px,calc(100%-1.5rem))] -translate-x-1/2 flex-col gap-2 sm:top-4 sm:w-[min(440px,70%)]">
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
           <Input
@@ -664,6 +679,7 @@ export function VectorVaultView({ leads, isLoading = false }: VectorVaultViewPro
                 sortBy={sortBy}
                 sortDirection={sortDirection}
                 onSort={handleSort}
+                onRowClick={onLeadSelect}
                 variant="panel"
               />
             </div>

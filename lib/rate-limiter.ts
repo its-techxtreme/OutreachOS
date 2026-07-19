@@ -165,6 +165,12 @@ export const rateLimiters = {
     maxRequests: 20,
     keyGenerator: (id) => `demo-signin:${id}`,
   }),
+  /** Dial kit status / scripts / quests mutations. */
+  dialKit: new AdvancedRateLimiter({
+    windowMs: 60_000,
+    maxRequests: 120,
+    keyGenerator: (id) => `dial-kit:${id}`,
+  }),
 };
 
 export function getImportRateLimiterForUser(roles: string[]): AdvancedRateLimiter {

@@ -48,3 +48,18 @@ next-env.d.ts
 # editor / agent local config (not part of the product)
 .cursor/
 .stitch/
+
+# local stardance / community drafts (not product docs)
+docs/DEVLOG*_STARDANCE.md
+docs/*_STARDANCE.md
+
+# debug / agent session logs
+debug-*.log
+.cursor/debug-*.log
+
+# local tooling noise
+lighthouse-report.html
+*.canvas.tsx
+playwright-report/
+test-results/
+blob-report/

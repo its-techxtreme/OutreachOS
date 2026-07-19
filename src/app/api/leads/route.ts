@@ -7,13 +7,17 @@ import {
 import { RBACService } from '@/lib/auth/rbac';
 import { ensureDefaultUserRole } from '@/lib/auth/ensure-role';
 import { getDemoSampleLeadIds } from '@/lib/demo/sample-leads';
+import { applyUserLeadStatusOverlays } from '@/lib/leads/user-lead-status';
 import { LeadSearchService, type LeadsQueryParams } from '@/lib/search';
+import { sanitizeInput } from '@/lib/sanitize';
 import { getSupabaseServer } from '@/lib/supabase-server';
-import type { LeadStatus } from '@/types/database.types';
+import type { Lead, LeadStatus } from '@/types/database.types';
 
 const VALID_STATUSES: LeadStatus[] = [
   'New',
-  'Contacted',
+  'Called',
+  'No Answer',
+  'Callback',
   'Replied',
   'Converted',
   'Archived',
@@ -37,13 +41,19 @@ function parseQueryParams(request: NextRequest): LeadsQueryParams {
       ? (statusParam as LeadStatus)
       : undefined;
 
+  const rawQ = searchParams.get('q');
+  const rawNiche = searchParams.get('niche');
+  const rawCountry = searchParams.get('country');
+  const rawStart = searchParams.get('startDate');
+  const rawEnd = searchParams.get('endDate');
+
   return {
-    searchTerm: searchParams.get('q') ?? undefined,
-    niche: searchParams.get('niche') ?? undefined,
-    country: searchParams.get('country') ?? undefined,
+    searchTerm: rawQ ? sanitizeInput(rawQ).slice(0, 200) : undefined,
+    niche: rawNiche ? sanitizeInput(rawNiche).slice(0, 120) : undefined,
+    country: rawCountry ? sanitizeInput(rawCountry).slice(0, 120) : undefined,
     status,
-    startDate: searchParams.get('startDate') ?? undefined,
-    endDate: searchParams.get('endDate') ?? undefined,
+    startDate: rawStart ? sanitizeInput(rawStart).slice(0, 40) : undefined,
+    endDate: rawEnd ? sanitizeInput(rawEnd).slice(0, 40) : undefined,
     page: parseOptionalInt(searchParams.get('page')),
     pageSize: parseOptionalInt(searchParams.get('pageSize')),
   };
@@ -83,9 +93,12 @@ export async function GET(request?: NextRequest): Promise<NextResponse> {
     // asks for everything.
     if (hasPagination || hasFilters || params.allowedLeadIds) {
       const result = await LeadSearchService.queryLeads(supabase, params);
+      const leads = RBACService.isDemoUser(user)
+        ? await applyUserLeadStatusOverlays(supabase, user.id, result.leads)
+        : result.leads;
 
       return NextResponse.json({
-        leads: result.leads,
+        leads,
         pagination: {
           currentPage: result.page,
           pageSize: result.pageSize,
@@ -109,7 +122,8 @@ export async function GET(request?: NextRequest): Promise<NextResponse> {
       );
     }
 
-    return NextResponse.json({ leads: data ?? [] });
+    const owned = (data ?? []) as Lead[];
+    return NextResponse.json({ leads: owned });
   } catch (fetchError) {
     const message =
       fetchError instanceof Error ? fetchError.message : 'Unknown error';

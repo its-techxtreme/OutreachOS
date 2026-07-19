@@ -1,7 +1,12 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
 const PROTECTED_PATHS = ['/admin', '/dashboard', '/settings'];
-const SESSION_REQUIRED_API_PREFIXES = ['/api/leads', '/api/admin'];
+const SESSION_REQUIRED_API_PREFIXES = [
+  '/api/leads',
+  '/api/admin',
+  '/api/scripts',
+  '/api/quests',
+];
 const PUBLIC_API_PREFIXES = [
   '/api/agent',
   '/api/health',
@@ -109,8 +114,16 @@ export default async function proxy(request: NextRequest) {
         pathname.startsWith('/auth/signup')) &&
       user
     ) {
-      const redirectTo =
-        request.nextUrl.searchParams.get('redirect') || '/dashboard';
+      const metaUsername =
+        typeof user.user_metadata?.username === 'string'
+          ? user.user_metadata.username.trim()
+          : '';
+      const roles = (user.app_metadata?.roles as string[] | undefined) ?? [];
+      const needsUsername =
+        !roles.includes('demo') && metaUsername.length === 0;
+      const redirectTo = needsUsername
+        ? '/auth/username'
+        : request.nextUrl.searchParams.get('redirect') || '/dashboard';
       return applySecurityHeaders(
         NextResponse.redirect(new URL(redirectTo, request.url)),
         requestId

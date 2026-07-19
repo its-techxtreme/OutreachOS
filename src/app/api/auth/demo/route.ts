@@ -83,6 +83,8 @@ export async function POST(request: Request): Promise<NextResponse> {
         success: true,
         requestId,
         redirectTo: '/dashboard',
+        accessToken: data.session.access_token,
+        refreshToken: data.session.refresh_token,
       }),
       requestId
     );

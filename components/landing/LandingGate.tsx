@@ -1,13 +1,16 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 import { useState } from 'react';
 
+import { BrandLockup } from '@/components/brand/BrandLockup';
 import { DoodleDecor } from '@/components/landing/DoodleDecor';
 import { MascotCallout } from '@/components/mascots/MascotCallout';
+import { SiteFooter } from '@/components/site/SiteFooter';
 import { useAuth } from '@/lib/hooks/useAuth';
 
 export function LandingGate() {
@@ -36,15 +39,13 @@ export function LandingGate() {
   return (
     <div
       data-testid="landing-gate"
-      className="paper-texture relative min-h-screen overflow-hidden text-ink"
+      className="paper-texture relative min-h-screen min-h-[100dvh] overflow-x-clip text-ink"
     >
       <DoodleDecor />
 
-      <header className="relative z-10 flex items-center justify-between px-6 py-6 md:px-10">
-        <p className="font-display text-3xl font-bold tracking-tight text-ink md:text-4xl">
-          Outreach<span className="text-marker">OS</span>
-        </p>
-        <div className="flex items-center gap-4">
+      <header className="safe-px relative z-10 flex items-center justify-between gap-3 px-4 py-4 sm:px-6 sm:py-6 md:px-10">
+        <BrandLockup size="md" href="/" />
+        <div className="flex shrink-0 items-center gap-3 sm:gap-4">
           <Link
             href="/auth/signup"
             className="hidden font-label text-sm font-semibold uppercase tracking-wide text-ink-muted underline decoration-2 underline-offset-4 hover:text-ink sm:inline"
@@ -53,37 +54,48 @@ export function LandingGate() {
           </Link>
           <Link
             href="/auth/login"
-            className="font-label text-sm font-semibold uppercase tracking-wide text-ink-muted underline decoration-2 underline-offset-4 hover:text-ink"
+            className="touch-target inline-flex items-center font-label text-sm font-semibold uppercase tracking-wide text-ink-muted underline decoration-2 underline-offset-4 hover:text-ink"
           >
             Sign in
           </Link>
         </div>
       </header>
 
-      <main className="relative z-10 mx-auto flex min-h-[78vh] max-w-5xl flex-col items-center justify-center px-6 pb-12 text-center">
+      <main className="safe-px relative z-10 mx-auto flex min-h-[70vh] max-w-5xl flex-col items-center justify-center px-4 pb-10 text-center sm:min-h-[78vh] sm:px-6 sm:pb-12">
         <motion.div
           initial={reduceMotion ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.55, ease: 'easeOut' }}
           className="w-full"
         >
-          <p className="mb-4 font-label text-xs font-semibold uppercase tracking-[0.2em] text-ink-muted">
+          <div className="mx-auto mb-5 flex justify-center sm:mb-6">
+            <Image
+              src="/brand/outreachos-logo-512.png"
+              alt="OutreachOS logo — sketchbook with outreach compass"
+              width={160}
+              height={160}
+              priority
+              className="h-24 w-24 object-contain sm:h-32 sm:w-32 md:h-40 md:w-40"
+              data-testid="hero-logo"
+            />
+          </div>
+          <p className="mb-3 font-label text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-muted sm:mb-4 sm:text-xs sm:tracking-[0.2em]">
             cold outreach, without the spreadsheet headache
           </p>
-          <h1 className="font-display text-6xl font-bold leading-[0.95] tracking-tight text-ink md:text-8xl">
+          <h1 className="font-display text-5xl font-bold leading-[0.95] tracking-tight text-ink sm:text-6xl md:text-8xl">
             Outreach<span className="text-marker">OS</span>
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl font-display text-3xl font-semibold leading-snug text-ink md:text-4xl">
+          <p className="mx-auto mt-4 max-w-2xl font-display text-2xl font-semibold leading-snug text-ink sm:mt-6 sm:text-3xl md:text-4xl">
             Your leads. Your vault.{' '}
             <span className="highlighter-wash px-1">Nobody else&apos;s mess.</span>
           </p>
-          <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-ink-muted md:text-xl">
+          <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-ink-muted sm:mt-5 sm:text-lg md:text-xl">
             Stop hunting contacts across tabs and half-finished sheets. Drop them
             in, filter what matters today, and keep every account private — like
             a notebook that actually stays organized.
           </p>
 
-          <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
+          <div className="mt-8 flex w-full flex-col items-stretch justify-center gap-3 sm:mt-10 sm:flex-row sm:flex-wrap sm:items-center">
             <Link
               href="/auth/signup"
               className="doodle-btn inline-flex h-12 items-center justify-center rounded-md bg-coral px-8 font-label text-sm font-bold uppercase tracking-wider text-ink"
@@ -112,22 +124,22 @@ export function LandingGate() {
               {demoError}
             </p>
           )}
-          <p className="mt-5 text-sm text-ink-muted">
+          <p className="mt-5 px-2 text-sm text-ink-muted">
             No sales call. No credit card. Just your own empty vault in under a minute.
           </p>
         </motion.div>
       </main>
 
-      <section className="relative z-10 mx-auto max-w-4xl px-6 pb-16">
-        <hr className="wobbly-divider mb-12" />
-        <h2 className="font-display text-center text-4xl font-bold text-ink md:text-5xl">
+      <section className="safe-px relative z-10 mx-auto max-w-4xl px-4 pb-12 sm:px-6 sm:pb-16">
+        <hr className="wobbly-divider mb-8 sm:mb-12" />
+        <h2 className="font-display text-center text-3xl font-bold text-ink sm:text-4xl md:text-5xl">
           Built for people who actually dial
         </h2>
-        <p className="mx-auto mt-4 max-w-2xl text-center text-ink-muted">
+        <p className="mx-auto mt-4 max-w-2xl text-center text-sm text-ink-muted sm:text-base">
           Freelancers, tiny agencies, solo founders — anyone tired of “wait, did I
           already message this place?” at 11pm.
         </p>
-        <ul className="mt-12 grid gap-10 md:grid-cols-3">
+        <ul className="mt-8 grid gap-8 sm:mt-12 sm:gap-10 md:grid-cols-3">
           {[
             {
               scribble: '01',
@@ -146,28 +158,30 @@ export function LandingGate() {
             },
           ].map((item) => (
             <li key={item.scribble} className="relative text-left">
-              <span className="font-display text-5xl font-bold text-marker/80">
+              <span className="font-display text-4xl font-bold text-marker/80 sm:text-5xl">
                 {item.scribble}
               </span>
-              <h3 className="mt-2 font-display text-2xl font-bold text-ink">
+              <h3 className="mt-2 font-display text-xl font-bold text-ink sm:text-2xl">
                 {item.title}
               </h3>
-              <p className="mt-2 leading-relaxed text-ink-muted">{item.body}</p>
+              <p className="mt-2 text-sm leading-relaxed text-ink-muted sm:text-base">
+                {item.body}
+              </p>
             </li>
           ))}
         </ul>
       </section>
 
-      <section className="relative z-10 mx-auto max-w-4xl px-6 pb-16">
-        <div className="doodle-border rotate-[-0.4deg] bg-highlighter/35 px-6 py-8 md:px-10">
-          <h2 className="font-display text-3xl font-bold text-ink md:text-4xl">
+      <section className="safe-px relative z-10 mx-auto max-w-4xl px-4 pb-12 sm:px-6 sm:pb-16">
+        <div className="doodle-border rotate-[-0.4deg] bg-highlighter/35 px-4 py-6 sm:px-6 sm:py-8 md:px-10">
+          <h2 className="font-display text-2xl font-bold text-ink sm:text-3xl md:text-4xl">
             What you get on the free plan
           </h2>
-          <p className="mt-3 max-w-xl text-ink-muted">
+          <p className="mt-3 max-w-xl text-sm text-ink-muted sm:text-base">
             Enough runway to run real outreach — not a toy that locks after five
             rows.
           </p>
-          <ul className="mt-6 space-y-3 text-ink">
+          <ul className="mt-6 space-y-3 text-sm text-ink sm:text-base">
             {[
               'Up to 500 leads in your personal vault',
               '10 Excel imports per day (200 rows each)',
@@ -177,7 +191,7 @@ export function LandingGate() {
             ].map((line) => (
               <li key={line} className="flex gap-3">
                 <span
-                  className="mt-1 inline-block h-2.5 w-2.5 rotate-12 bg-coral"
+                  className="mt-1 inline-block h-2.5 w-2.5 shrink-0 rotate-12 bg-coral"
                   aria-hidden
                 />
                 <span>{line}</span>
@@ -185,7 +199,7 @@ export function LandingGate() {
             ))}
           </ul>
         </div>
-        <div className="mt-10">
+        <div className="mt-8 sm:mt-10">
           <MascotCallout mascot="citygirl" title="Start empty. That’s the point.">
             New accounts don’t inherit anyone else’s leads. Import your sheet, and
             Mira will stay out of the way while you fill the vault.
@@ -193,15 +207,15 @@ export function LandingGate() {
         </div>
       </section>
 
-      <section className="relative z-10 mx-auto max-w-3xl px-6 pb-24 text-center">
-        <h2 className="font-display text-4xl font-bold text-ink">
+      <section className="safe-px relative z-10 mx-auto max-w-3xl px-4 pb-16 text-center sm:px-6 sm:pb-24">
+        <h2 className="font-display text-3xl font-bold text-ink sm:text-4xl">
           Ready when you are
         </h2>
-        <p className="mx-auto mt-3 max-w-lg text-ink-muted">
+        <p className="mx-auto mt-3 max-w-lg text-sm text-ink-muted sm:text-base">
           Make an account, import a sheet, and stop treating Maps links like a
           scavenger hunt.
         </p>
-        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <div className="mt-8 flex w-full flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
           <Link
             href="/auth/signup"
             className="doodle-btn inline-flex h-12 items-center justify-center rounded-md bg-coral px-8 font-label text-sm font-bold uppercase tracking-wider text-ink"
@@ -219,10 +233,7 @@ export function LandingGate() {
         </div>
       </section>
 
-      <footer className="relative z-10 border-t-2 border-ink/20 px-6 py-8 text-center text-sm text-ink-muted">
-        OutreachOS — personal lead management for people who ship outreach, not
-        slides about outreach.
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

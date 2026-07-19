@@ -1,247 +1,175 @@
 # OutreachOS
 
-**Lead intake → organize → outreach**
+Personal lead vault for cold outreach.
 
-OutreachOS is a lead management app for cold outreach. Instead of dumping contacts into random spreadsheets and forgetting who you already messaged, you keep everything in one place: import from Excel, filter by niche/country/status, track progress, and export the lists you need.
+Dump contacts in from Excel, filter by niche / country / status, keep call scripts next to the list, and stop losing track of who you already rang. Each account gets its own vault.
 
-It also accepts leads from a ChatGPT agent over a secured API, so prospecting and the dashboard can stay connected.
+**Live:** [https://outreachos.techxtreme.me](https://outreachos.techxtreme.me)  
+**Also:** [outreachos-online.vercel.app](https://outreachos-online.vercel.app)  
+**Repo:** [github.com/its-techxtreme/OutreachOS](https://github.com/its-techxtreme/OutreachOS)  
+**Stardance:** [project page](https://stardance.hackclub.com/projects/33617)
 
-
-|                   |                                                                                                                          |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **Live demo**     | [outreachos-online.vercel.app](https://outreachos-online.vercel.app)                                                     |
-| **Repository**    | [github.com/its-techxtreme/OutreachOS](https://github.com/its-techxtreme/OutreachOS)                                     |
-| **Hack Club**     | [Stardance project page](https://stardance.hackclub.com/projects/33617)                                                  |
-
-
----
-
-
-
-## Why this exists
-
-Cold outreach ops looks simple until you do it for real:
-
-1. Collect business contacts from Maps / sheets / random notes
-2. Clean phone numbers and addresses
-3. Deduplicate so you do not message the same place twice
-4. Filter by niche, country, or status before you start calling
-5. Export a list for the day without rebuilding filters from scratch
-6. Keep track of New → Contacted → Replied → Converted
-
-Miss a step and your pipeline turns into chaos. OutreachOS replaces that mess with a single dashboard backed by Supabase: **import → validate → dedupe → filter → export**, plus an agent endpoint for automated intake.
-
-The app runs on Vercel. Auth and data live in Supabase.
+<p align="center">
+  <img src="docs/readme/01-landing.png" alt="OutreachOS landing page" width="820" />
+</p>
 
 ---
 
+## Try it without cloning
 
+1. Open [outreachos.techxtreme.me](https://outreachos.techxtreme.me)
+2. Hit **Peek the demo** / **Sign in as Demo** — one click, no password typing
 
-## Try the demo (no local setup)
+Demo is a shared sample vault (100 leads). Imports are capped so people don’t trash it. For your own empty vault, use **Start free** or Google sign-in.
 
-You do not need to clone the repo to click around.
-
-1. Open **[https://outreachos-online.vercel.app](https://outreachos-online.vercel.app)**
-2. Click **Sign in as Demo** on the landing page (or login screen) — no password typing required.
-
-Optional manual credentials (same shared demo account):
-
-
-| Field    | Value                     |
-| -------- | ------------------------- |
-| Email    | `user@outreachos.vercel`  |
-| Password | `OutreachOS@13`           |
-
-
-**What the demo user can do**
-
-- Browse the dashboard, filters, metrics, and vector vault view  
-- Export the curated sample  
-- Try Excel import (limited to **1 upload per hour**, max 50 rows)
-
-**What the demo user cannot do**
-
-- See other users’ private leads (demo is capped to **100** curated contacts)  
-- Change security settings, delete leads, or use admin tools
-
-### Create your own account
-
-- **Sign up** with email + password (email verification required) or **Google**
-- New accounts start with an **empty** personal lead pool
-- Free-tier caps: **500** leads · **10** imports/day · **200** rows per import
+<p align="center">
+  <img src="docs/readme/08-login.png" alt="Login with demo button" width="480" />
+</p>
 
 ---
 
+## What it looks like
 
+Sketchbook UI on purpose — paper texture, doodle borders, sticky notes. Not another purple SaaS dashboard.
 
-## Architecture (at a glance)
+### Demo tutorial
 
+First time you open the demo, Rio walks you through the vault (filters, metrics, scripts, etc). You can skip whenever.
 
-| Piece        | Role                                              |
-| ------------ | ------------------------------------------------- |
-| **Web app**  | Landing + authenticated dashboard (Next.js)       |
-| **API**      | Leads, filters, Excel import, agent intake        |
-| **Supabase** | Postgres + Auth (source of truth for leads/users) |
-| **Vercel**   | Hosting for the web app                           |
+<p align="center">
+  <img src="docs/readme/02-demo-tutorial-start.png" alt="Demo tutorial intro with Rio" width="720" />
+</p>
 
+<p align="center">
+  <img src="docs/readme/03-demo-tutorial-step.png" alt="Tutorial highlighting metrics" width="720" />
+</p>
+
+### Dashboard + quests
+
+Metrics up top, weekly quest board if you opt in, filters, then the lead list.
+
+<p align="center">
+  <img src="docs/readme/04-dashboard.png" alt="Dashboard with metrics and quest board" width="720" />
+</p>
+
+<p align="center">
+  <img src="docs/readme/07-lead-table.png" alt="Lead table with filters and statuses" width="720" />
+</p>
+
+### Vector vault
+
+Niche / country graph when you want the big picture instead of rows.
+
+<p align="center">
+  <img src="docs/readme/05-vector.png" alt="Vector vault graph view" width="820" />
+</p>
+
+### Sticky call scripts
+
+Call pitch pad that stays open while you dial. Placeholders like `{business}` / `{niche}` / `{location}` / `{phone}` — you say them live. Edit and save your own.
+
+<p align="center">
+  <img src="docs/readme/06-scripts.png" alt="Sticky call scripts panel" width="820" />
+</p>
+
+---
+
+## What’s in the app
+
+- Excel import + format guide (`/import-guide`) + template under `public/templates/`
+- Filters, search, CSV export
+- Call statuses: New, Called, No Answer, Callback, Replied, Converted, Archived
+- Sticky scripts (general + niche)
+- Optional Quest Board (3 random weekly quests)
+- Vector vault graph
+- Email / password signup, Google sign-in, one-click demo
+- Per-user lead pools (your stuff stays yours)
+
+Agent intake is still there for ChatGPT → `POST /api/agent/leads` with `X-Agent-Secret`.
+
+---
+
+## Stack
+
+Next.js · Supabase (Auth + Postgres) · Tailwind · Vercel
 
 ```text
-ChatGPT agent / Excel upload  →  Next.js API  →  Supabase (leads)
-                                                    ↓
-                                         Dashboard (filter / export / status)
+Excel / ChatGPT agent  →  Next.js API  →  Supabase
+                              ↓
+                    Dashboard (filter / dial / export)
 ```
 
 ---
 
+## Local setup
 
-
-## Acknowledgments
-
-Parts of this codebase were written and iterated with **[Cursor](https://cursor.com)**, an AI-assisted editor. Cursor was used for scaffolding, debugging, writing tests, and shipping the dashboard and import flow. Product decisions, architecture tradeoffs, deployment choices, and final review remain mine.
-
-The product also integrates with a ChatGPT Custom GPT for automated lead intake through the secured agent API.
-
----
-
-
-
-## Prerequisites
-
-1. **Node.js 18+** and npm  
-2. A **Supabase** project where you can run SQL migrations  
-3. Optional: a ChatGPT Custom GPT if you want agent intake
-
----
-
-
-
-## First-time setup
-
-### 1. Clone and install
+Need Node 18+, a Supabase project, and the usual patience with env vars.
 
 ```bash
 git clone https://github.com/its-techxtreme/OutreachOS.git
 cd OutreachOS
 npm install
-```
-
-### 2. Environment files
-
-```bash
 cp .env.example .env.local
 ```
 
-Fill in at least:
+Fill `.env.local` (see `.env.example`). Important ones:
 
+- `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY` (server only)
+- `AGENT_SECRET`
+- `ENCRYPTION_KEY` (64 hex chars — MFA secrets at rest)
+- `ADMIN_*` and optional `DEMO_USER_*`
+- `NEXT_PUBLIC_APP_URL` / `NEXT_PUBLIC_SITE_URL`
 
-| Variable | Notes |
-| -------- | ----- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | **Server only** — never expose to the browser |
-| `AGENT_SECRET` | Shared secret for `POST /api/agent/leads` |
-| `NEXT_PUBLIC_APP_URL` / `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` locally |
-| `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_USERNAME` | Your admin account |
-| `DEMO_USER_EMAIL` / `DEMO_USER_PASSWORD` / `DEMO_USER_USERNAME` | Optional public demo account |
-
-**Do not commit** `.env.local` or real passwords.
-
-### 3. Database
-
-Run every file under `supabase/migrations/` against your Supabase project (SQL editor or CLI), in order.
-
-### 4. Auth URLs
-
-In Supabase → **Authentication → URL Configuration**:
-
-- Site URL: `http://localhost:3000` (or your production URL)
-- Redirect allow-list should include `/auth/callback`, `/auth/login`, and `/auth/reset-password`
-
-### 5. Create accounts + demo sample
+Run migrations in `supabase/migrations/` in order, then:
 
 ```bash
 npm run ensure:accounts
 npm run seed:demo
-```
-
-### 6. Start the app
-
-```bash
 npm run dev
 ```
 
+Open [http://localhost:3000](http://localhost:3000).
 
-| Route | Purpose |
-| ----- | ------- |
-| [http://localhost:3000](http://localhost:3000) | Landing |
-| [http://localhost:3000/auth/login](http://localhost:3000/auth/login) | Sign in |
-| [http://localhost:3000/dashboard](http://localhost:3000/dashboard) | Lead dashboard |
-
+Supabase Auth redirect URLs should include `/auth/callback`, `/auth/login`, `/auth/reset-password`, and `/auth/username`.
 
 ---
 
-
-
-## Useful scripts
+## Scripts
 
 ```bash
-npm run dev              # local server
-npm run build            # production build
-npm run test             # Jest
-npm run test:e2e         # Playwright
-npm run lint             # ESLint
-npm run type-check       # TypeScript
-npm run ensure:accounts  # sync admin/demo users from .env.local
-npm run seed:demo        # refresh the curated demo lead sample
+npm run dev
+npm run build
+npm run test
+npm run test:e2e
+npm run lint
+npm run ensure:accounts
+npm run seed:demo
+npm run audit:secrets
 ```
 
 ---
 
+## Docs
 
+| Doc | What’s in it |
+| --- | --- |
+| [API Spec](./docs/API_SPECIFICATION.md) | Agent endpoint shapes |
+| [Deployment](./docs/DEPLOYMENT_GUIDE.md) | Vercel / prod notes |
+| [Security](./docs/SECURITY_REQUIREMENTS.md) | Auth expectations |
+| [Architecture](./docs/TECHNICAL_ARCHITECTURE.md) | How pieces fit |
+| [Custom GPT](./docs/chatgpt/CUSTOM_GPT_INSTRUCTIONS.md) | Agent setup |
 
-## Repo layout
-
-```text
-src/app/          Pages + API routes
-components/       UI
-lib/              Auth, import, search, leads helpers
-supabase/         SQL migrations
-docs/             API, security, deployment notes
-scripts/          Account + demo seeding helpers
-public/           Brand assets
-```
+Screenshots in this README were taken from the live site (`docs/readme/`).
 
 ---
 
+## Security (short version)
 
-
-## Documentation
-
-
-| Doc | Use it for |
-| --- | ---------- |
-| [API Specification](./docs/API_SPECIFICATION.md) | Agent endpoint + request shapes |
-| [Deployment Guide](./docs/DEPLOYMENT_GUIDE.md) | Production / Vercel notes |
-| [Security Requirements](./docs/SECURITY_REQUIREMENTS.md) | Auth and access expectations |
-| [Technical Architecture](./docs/TECHNICAL_ARCHITECTURE.md) | System design |
-| [ChatGPT instructions](./docs/chatgpt/CUSTOM_GPT_INSTRUCTIONS.md) | Custom GPT setup |
-
+Don’t commit `.env.local` or real keys. Service role stays server-side. Passwords go through Supabase Auth. MFA secrets are encrypted with `ENCRYPTION_KEY`. Demo is intentionally limited.
 
 ---
 
+## Credits
 
-
-## Security reminders
-
-- Never commit `.env`, `.env.local`, service role keys, or agent secrets.  
-- Keep `SUPABASE_SERVICE_ROLE_KEY` off the client.  
-- Demo accounts stay limited on purpose — do not reuse admin credentials publicly.  
-- `.env.example` uses placeholders only.
-
----
-
-
-
-## Author
-
-Athan (Techxtreme)
+Built by **Athan** (Techxtreme). Parts of the code were written with help from [Cursor](https://cursor.com) — scaffolding, tests, and the boring glue. Product calls and final review are mine.

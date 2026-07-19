@@ -29,6 +29,7 @@
     "test:all": "npm run lint && npm run type-check && npm run test && npm run test:e2e",
     "playwright:install": "playwright install",
     "audit:security": "npm audit",
+    "audit:secrets": "node ./scripts/audit-no-hardcoded-secrets.mjs",
     "audit:security:full": "node ./scripts/security-audit.mjs",
     "validate:production": "node ./scripts/validate-production.mjs",
     "ensure:admin": "node ./scripts/ensure-accounts.mjs",

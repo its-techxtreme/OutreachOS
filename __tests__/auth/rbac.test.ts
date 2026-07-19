@@ -73,11 +73,14 @@ describe('RBACService', () => {
   });
 
   it('enforces route-level permissions', () => {
+    const demoUser = { app_metadata: { roles: [Role.DEMO] } };
     expect(RBACService.canAccessRoute(viewerUser, '/dashboard')).toBe(true);
     expect(RBACService.canAccessRoute(viewerUser, '/admin/settings')).toBe(
       false
     );
     expect(RBACService.canAccessRoute(adminUser, '/admin/settings')).toBe(true);
+    expect(RBACService.canAccessRoute(viewerUser, '/settings')).toBe(true);
+    expect(RBACService.canAccessRoute(demoUser, '/settings')).toBe(true);
   });
 
   it('allows unknown routes by default', () => {

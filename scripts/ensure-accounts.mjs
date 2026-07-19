@@ -25,6 +25,46 @@ function loadEnv(filePath) {
   );
 }
 
+function normalizeProfileUsername(username, userId) {
+  const normalized = String(username)
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9_]/g, '')
+    .replace(/^[^a-z]+/, 'u');
+
+  if (normalized.length >= 3) {
+    return normalized.slice(0, 20);
+  }
+
+  return `user${String(userId).replace(/-/g, '').slice(0, 8)}`;
+}
+
+async function ensureProfile(admin, { userId, username }) {
+  if (!userId || !username) {
+    return { ok: false, skipped: true };
+  }
+
+  const safeUsername = normalizeProfileUsername(username, userId);
+
+  const { error } = await admin.from('profiles').upsert(
+    {
+      user_id: userId,
+      username: safeUsername,
+      display_name: safeUsername,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'user_id' }
+  );
+
+  if (error) {
+    throw new Error(
+      `PROFILE_UPSERT_FAILED (${safeUsername}): ${error.message}`
+    );
+  }
+
+  return { ok: true, username: safeUsername };
+}
+
 async function ensureUser(admin, { email, password, username, roles, name }) {
   const listed = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
   if (listed.error) {
@@ -35,13 +75,18 @@ async function ensureUser(admin, { email, password, username, roles, name }) {
     (user) => user.email?.toLowerCase() === email.toLowerCase()
   );
 
+  const profileUsername = normalizeProfileUsername(
+    username,
+    existing?.id ?? 'pending'
+  );
+
   const app_metadata = {
     ...(existing?.app_metadata ?? {}),
     roles,
   };
   const user_metadata = {
     ...(existing?.user_metadata ?? {}),
-    username,
+    username: profileUsername,
     name,
   };
 
@@ -57,12 +102,17 @@ async function ensureUser(admin, { email, password, username, roles, name }) {
       throw new Error(`UPDATE_FAILED (${email}): ${error.message}`);
     }
 
+    await ensureProfile(admin, {
+      userId: data.user.id,
+      username: profileUsername,
+    });
+
     return {
       ok: true,
       action: 'updated',
       userId: data.user.id,
       email: data.user.email,
-      username,
+      username: profileUsername,
       roles: data.user.app_metadata?.roles,
     };
   }
@@ -79,12 +129,31 @@ async function ensureUser(admin, { email, password, username, roles, name }) {
     throw new Error(`CREATE_FAILED (${email}): ${error.message}`);
   }
 
+  const createdUsername = normalizeProfileUsername(
+    username,
+    data.user?.id ?? 'pending'
+  );
+
+  if (createdUsername !== profileUsername && data.user?.id) {
+    await admin.auth.admin.updateUserById(data.user.id, {
+      user_metadata: {
+        ...user_metadata,
+        username: createdUsername,
+      },
+    });
+  }
+
+  await ensureProfile(admin, {
+    userId: data.user?.id,
+    username: createdUsername,
+  });
+
   return {
     ok: true,
     action: 'created',
     userId: data.user?.id,
     email: data.user?.email,
-    username,
+    username: createdUsername,
     roles: data.user?.app_metadata?.roles,
   };
 }
@@ -116,7 +185,7 @@ async function main() {
       await ensureUser(admin, {
         email: env.ADMIN_EMAIL,
         password: env.ADMIN_PASSWORD,
-        username: env.ADMIN_USERNAME || 'Admin',
+        username: env.ADMIN_USERNAME || 'admin_ops',
         roles: ['admin'],
         name: 'OutreachOS Admin',
       })
@@ -130,7 +199,7 @@ async function main() {
       await ensureUser(admin, {
         email: env.DEMO_USER_EMAIL,
         password: env.DEMO_USER_PASSWORD,
-        username: env.DEMO_USER_USERNAME || 'DemoUser',
+        username: env.DEMO_USER_USERNAME || 'demo_vault',
         roles: ['demo'],
         name: 'OutreachOS Demo',
       })

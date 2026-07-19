@@ -23,7 +23,7 @@ interface AuthContextType {
   loading: boolean;
   error: string | null;
   isAuthenticated: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (identifier: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<{ needsEmailConfirmation: boolean }>;
   signInWithGoogle: () => Promise<void>;
   signInAsDemo: () => Promise<void>;
@@ -122,24 +122,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [authService, router, supabase]);
 
   const signIn = useCallback(
-    async (email: string, password: string) => {
+    async (identifier: string, password: string) => {
       setLoading(true);
       setError(null);
       try {
-        await authService.signIn(email, password);
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifier, password }),
+        });
+        const body = (await response.json()) as {
+          error?: string;
+          redirectTo?: string;
+          accessToken?: string;
+          refreshToken?: string;
+        };
+        if (!response.ok) {
+          throw new Error(body.error ?? 'Invalid credentials');
+        }
+
+        // Server set cookies; also hydrate the browser client so RouteGuard
+        // does not see loading=false + session=null (blank white dashboard).
+        let nextSession =
+          body.accessToken && body.refreshToken
+            ? await authService.setSessionFromTokens(
+                body.accessToken,
+                body.refreshToken
+              )
+            : await authService.getCurrentSession();
+
+        if (!nextSession) {
+          // Brief cookie race after Set-Cookie — retry once.
+          await new Promise((resolve) => setTimeout(resolve, 50));
+          nextSession = await authService.getCurrentSession();
+        }
+
+        setSession(nextSession);
+        setUser(nextSession?.user ?? null);
         SessionSecurityService.touchActivity();
-        router.push('/dashboard');
-        router.refresh();
+
+        const destination = body.redirectTo ?? '/dashboard';
+        // Full navigation remounts AuthProvider — reliable after account switch.
+        window.location.assign(destination);
       } catch (err) {
         const message =
           err instanceof Error ? err.message : 'Invalid credentials';
         setError(message);
-        throw err;
-      } finally {
         setLoading(false);
+        throw err;
       }
     },
-    [authService, router]
+    [authService]
   );
 
   const signUp = useCallback(
@@ -150,9 +183,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const data = await authService.signUp(email, password);
         const needsEmailConfirmation = !data.session;
         if (data.session) {
+          setSession(data.session);
+          setUser(data.session.user);
           SessionSecurityService.touchActivity();
-          router.push('/dashboard');
-          router.refresh();
+          window.location.assign('/auth/username');
+          return { needsEmailConfirmation };
         }
         return { needsEmailConfirmation };
       } catch (err) {
@@ -164,7 +199,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       }
     },
-    [authService, router]
+    [authService]
   );
 
   const signInWithGoogle = useCallback(async () => {
@@ -192,24 +227,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const body = (await response.json()) as {
         error?: string;
         redirectTo?: string;
+        accessToken?: string;
+        refreshToken?: string;
       };
       if (!response.ok) {
         throw new Error(body.error ?? 'Demo sign-in failed');
       }
-      // Server set auth cookies — pull them into the browser client session.
-      await authService.getCurrentSession();
+
+      let nextSession =
+        body.accessToken && body.refreshToken
+          ? await authService.setSessionFromTokens(
+              body.accessToken,
+              body.refreshToken
+            )
+          : await authService.getCurrentSession();
+
+      if (!nextSession) {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        nextSession = await authService.getCurrentSession();
+      }
+
+      setSession(nextSession);
+      setUser(nextSession?.user ?? null);
       SessionSecurityService.touchActivity();
-      router.push(body.redirectTo ?? '/dashboard');
-      router.refresh();
+      window.location.assign(body.redirectTo ?? '/dashboard');
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Demo sign-in failed';
       setError(message);
-      throw err;
-    } finally {
       setLoading(false);
+      throw err;
     }
-  }, [authService, router]);
+  }, [authService]);
 
   const signOut = useCallback(async () => {
     setLoading(true);

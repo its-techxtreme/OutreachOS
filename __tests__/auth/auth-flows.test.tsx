@@ -10,6 +10,7 @@ import { RouteGuard } from '@/components/auth/RouteGuard';
 import { MFASetup } from '@/components/auth/MFASetup';
 
 const mockPush = jest.fn();
+const mockReplace = jest.fn();
 const mockSignIn = jest.fn();
 const mockResetPassword = jest.fn();
 const mockClearError = jest.fn();
@@ -17,11 +18,28 @@ const mockClearError = jest.fn();
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
-    replace: jest.fn(),
+    replace: mockReplace,
     refresh: jest.fn(),
   }),
   usePathname: () => '/auth/login',
   useSearchParams: () => new URLSearchParams(),
+}));
+
+jest.mock('next/image', () => ({
+  __esModule: true,
+  default: (props: { alt?: string; src: string }) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img alt={props.alt ?? ''} src={props.src} />
+  ),
+}));
+
+jest.mock('framer-motion', () => ({
+  motion: {
+    div: ({ children, ...props }: { children?: React.ReactNode }) => (
+      <div {...props}>{children}</div>
+    ),
+  },
+  useReducedMotion: () => true,
 }));
 
 const authState = {
@@ -45,16 +63,11 @@ jest.mock('@/lib/hooks/useAuth', () => ({
   AuthProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-jest.mock('@/lib/auth/mfa', () => ({
-  MFAService: jest.fn().mockImplementation(() => ({
-    enableMFA: jest.fn().mockResolvedValue({
-      secret: 'SECRET',
-      qrCode: 'data:image/png;base64,aaa',
-    }),
-    verifyAndEnableMFA: jest.fn().mockResolvedValue(true),
-    disableMFA: jest.fn().mockResolvedValue(true),
-  })),
+jest.mock('@/lib/sound', () => ({
+  playSound: jest.fn(),
 }));
+
+const mockFetch = jest.fn();
 
 describe('Authentication Flows', () => {
   beforeEach(() => {
@@ -66,13 +79,41 @@ describe('Authentication Flows', () => {
     authState.isAuthenticated = false;
     mockSignIn.mockResolvedValue(undefined);
     mockResetPassword.mockResolvedValue(undefined);
+    mockFetch.mockImplementation(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('/api/auth/mfa/setup')) {
+        return {
+          ok: true,
+          json: async () => ({
+            qrCode: 'data:image/png;base64,aaa',
+            secret: 'SECRET',
+            backupCodes: ['AAAA-BBBB'],
+          }),
+        };
+      }
+      if (url.includes('/api/auth/mfa/verify')) {
+        return {
+          ok: true,
+          json: async () => ({ success: true }),
+        };
+      }
+      if (url.includes('/api/auth/mfa/disable')) {
+        return {
+          ok: true,
+          json: async () => ({ success: true }),
+        };
+      }
+      return { ok: false, json: async () => ({ error: 'not mocked' }) };
+    });
+    global.fetch = mockFetch as unknown as typeof fetch;
   });
 
   it('successful login flow', async () => {
     const user = userEvent.setup();
     render(<LoginForm />);
 
-    await user.type(screen.getByLabelText(/email/i), 'admin@test.com');
+    expect(screen.getByLabelText(/email or username/i)).toBeInTheDocument();
+    await user.type(screen.getByTestId('email-input'), 'admin@test.com');
     await user.type(screen.getByLabelText(/password/i), 'SecurePassword123!');
     await user.click(screen.getByTestId('login-button'));
 
@@ -82,7 +123,22 @@ describe('Authentication Flows', () => {
         'SecurePassword123!'
       );
     });
-    expect(mockPush).toHaveBeenCalledWith('/dashboard');
+  });
+
+  it('successful login with username identifier', async () => {
+    const user = userEvent.setup();
+    render(<LoginForm />);
+
+    await user.type(screen.getByTestId('email-input'), 'rio_vault');
+    await user.type(screen.getByLabelText(/password/i), 'SecurePassword123!');
+    await user.click(screen.getByTestId('login-button'));
+
+    await waitFor(() => {
+      expect(mockSignIn).toHaveBeenCalledWith(
+        'rio_vault',
+        'SecurePassword123!'
+      );
+    });
   });
 
   it('failed login with invalid credentials', async () => {
@@ -91,7 +147,7 @@ describe('Authentication Flows', () => {
     authState.error = 'Invalid login credentials';
 
     const { rerender } = render(<LoginForm />);
-    await user.type(screen.getByLabelText(/email/i), 'invalid@test.com');
+    await user.type(screen.getByTestId('email-input'), 'invalid@test.com');
     await user.type(screen.getByLabelText(/password/i), 'wrongpassword');
     await user.click(screen.getByTestId('login-button'));
 
@@ -151,6 +207,8 @@ describe('Route Protection', () => {
     authState.loading = false;
     authState.user = null;
     authState.session = null;
+    mockReplace.mockClear();
+    mockPush.mockClear();
   });
 
   it('redirects unauthenticated users from protected routes', async () => {
@@ -161,11 +219,29 @@ describe('Route Protection', () => {
     );
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/auth/login');
+      expect(mockReplace).toHaveBeenCalledWith('/auth/login');
     });
   });
 
   it('allows authenticated users to access protected routes', async () => {
+    authState.session = { user: { id: 'test-user' } };
+    authState.user = {
+      id: 'test-user',
+      email: 'test@test.com',
+      app_metadata: { roles: ['admin'] },
+      user_metadata: { username: 'admin_vault' },
+    };
+
+    render(
+      <RouteGuard requireAuth>
+        <div>Protected Content</div>
+      </RouteGuard>
+    );
+
+    expect(screen.getByText('Protected Content')).toBeInTheDocument();
+  });
+
+  it('redirects authenticated users without username to /auth/username', async () => {
     authState.session = { user: { id: 'test-user' } };
     authState.user = {
       id: 'test-user',
@@ -179,7 +255,28 @@ describe('Route Protection', () => {
       </RouteGuard>
     );
 
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledWith('/auth/username');
+    });
+    expect(screen.queryByText('Protected Content')).not.toBeInTheDocument();
+  });
+
+  it('allows demo role without username', async () => {
+    authState.session = { user: { id: 'demo-user' } };
+    authState.user = {
+      id: 'demo-user',
+      email: 'demo@test.com',
+      app_metadata: { roles: ['demo'] },
+    };
+
+    render(
+      <RouteGuard requireAuth>
+        <div>Protected Content</div>
+      </RouteGuard>
+    );
+
     expect(screen.getByText('Protected Content')).toBeInTheDocument();
+    expect(mockReplace).not.toHaveBeenCalledWith('/auth/username');
   });
 
   it('RBAC blocks users without required roles', async () => {
@@ -188,6 +285,7 @@ describe('Route Protection', () => {
       id: 'test-user',
       email: 'test@test.com',
       app_metadata: { roles: ['viewer'] },
+      user_metadata: { username: 'viewer_user' },
     };
 
     render(
@@ -197,7 +295,7 @@ describe('Route Protection', () => {
     );
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/auth/unauthorized');
+      expect(mockReplace).toHaveBeenCalledWith('/auth/unauthorized');
     });
   });
 });

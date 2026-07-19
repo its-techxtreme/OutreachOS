@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Security Settings | OutreachOS',
-  description: 'Manage authentication and MFA settings',
+  title: 'Account | OutreachOS',
+  description: 'Manage your OutreachOS profile, security, and preferences',
 };
 
 export default function SettingsLayout({

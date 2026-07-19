@@ -20,7 +20,9 @@ export interface LeadFilterState {
 
 export const LEAD_STATUSES: LeadStatus[] = [
   'New',
-  'Contacted',
+  'Called',
+  'No Answer',
+  'Callback',
   'Replied',
   'Converted',
   'Archived',

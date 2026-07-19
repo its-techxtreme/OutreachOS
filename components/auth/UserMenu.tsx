@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { LogOut, Settings, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { LogOut, Settings, User, Volume2, VolumeX } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -12,14 +13,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { getUserDisplayName } from '@/lib/auth/display-name';
-import { Permission } from '@/lib/auth/rbac';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { useRBAC } from '@/lib/hooks/useRBAC';
+import { isSoundMuted, playSound, setSoundMuted } from '@/lib/sound';
 
 export function UserMenu() {
   const { user, signOut, loading } = useAuth();
-  const { hasPermission } = useRBAC();
-  const canOpenSettings = hasPermission(Permission.SYSTEM_SETTINGS);
+  const [muted, setMuted] = useState(true);
+
+  useEffect(() => {
+    setMuted(isSoundMuted());
+  }, []);
 
   if (!user) {
     return null;
@@ -34,6 +37,7 @@ export function UserMenu() {
           variant="ghost"
           className="flex items-center gap-2"
           data-testid="user-menu"
+          onClick={() => playSound('tap')}
         >
           <User className="h-4 w-4" />
           <span className="hidden max-w-[180px] truncate md:inline">
@@ -42,22 +46,44 @@ export function UserMenu() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {canOpenSettings && (
-          <>
-            <DropdownMenuItem asChild>
-              <Link href="/settings" className="flex items-center gap-2">
-                <Settings className="h-4 w-4" />
-                Security settings
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-          </>
-        )}
+        <DropdownMenuItem asChild>
+          <Link
+            href="/settings"
+            className="flex items-center gap-2"
+            data-testid="account-menu-link"
+          >
+            <Settings className="h-4 w-4" />
+            Account
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          data-testid="sound-toggle"
+          onSelect={(event) => {
+            event.preventDefault();
+            const next = !muted;
+            setSoundMuted(next);
+            setMuted(next);
+            if (!next) {
+              playSound('pop');
+            }
+          }}
+          className="flex items-center gap-2"
+        >
+          {muted ? (
+            <VolumeX className="h-4 w-4" />
+          ) : (
+            <Volume2 className="h-4 w-4" />
+          )}
+          {muted ? 'Unmute sounds' : 'Mute sounds'}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem
           disabled={loading}
           data-testid="logout-button"
           onSelect={(event) => {
             event.preventDefault();
+            playSound('soft');
             void signOut();
           }}
           className="flex items-center gap-2 text-red-300 focus:text-red-200"

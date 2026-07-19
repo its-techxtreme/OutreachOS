@@ -24,6 +24,7 @@ describe('useLeads', () => {
 
     expect(result.current.leads).toHaveLength(3);
     expect(result.current.error).toBeNull();
+    expect(typeof result.current.updateLeadStatus).toBe('function');
   });
 
   it('sets error when fetch fails', async () => {

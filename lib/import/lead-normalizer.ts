@@ -34,9 +34,23 @@ const NAME_KEYS = [
   'lead name',
 ];
 
-const NICHE_KEYS = ['niche', 'category', 'industry', 'vertical'];
+const NICHE_KEYS = [
+  'niche',
+  'category',
+  'industry',
+  'vertical',
+  'sector',
+  'type',
+  'business type',
+];
 
-const COUNTRY_KEYS = ['country', 'nation', 'region'];
+const COUNTRY_KEYS = [
+  'country',
+  'nation',
+  'region',
+  'market',
+  'country/region',
+];
 
 const ADDRESS_KEYS = ['address', 'full address', 'location', 'street'];
 

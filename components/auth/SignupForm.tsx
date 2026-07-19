@@ -3,17 +3,31 @@
 import { useState } from 'react';
 import Link from 'next/link';
 
+import { BrandLockup } from '@/components/brand/BrandLockup';
+import { LegalConsentCheckbox } from '@/components/auth/LegalConsentCheckbox';
 import { DoodleDecor } from '@/components/landing/DoodleDecor';
+import { LEGAL_PATHS } from '@/lib/brand';
 import { useAuth } from '@/lib/hooks/useAuth';
 
 export function SignupForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [acceptedLegal, setAcceptedLegal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [checkEmail, setCheckEmail] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const { signUp, signInWithGoogle, error, clearError } = useAuth();
+
+  const requireLegalAcceptance = (): boolean => {
+    if (!acceptedLegal) {
+      setLocalError(
+        'Please accept the Terms, Privacy Policy, and Acceptable Use Policy to continue.'
+      );
+      return false;
+    }
+    return true;
+  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -22,6 +36,10 @@ export function SignupForm() {
 
     if (password !== confirm) {
       setLocalError('Passwords do not match');
+      return;
+    }
+
+    if (!requireLegalAcceptance()) {
       return;
     }
 
@@ -38,12 +56,21 @@ export function SignupForm() {
     }
   };
 
+  const handleGoogle = async () => {
+    clearError();
+    setLocalError(null);
+    if (!requireLegalAcceptance()) {
+      return;
+    }
+    await signInWithGoogle();
+  };
+
   if (checkEmail) {
     return (
-      <div className="auth-stage paper-texture flex min-h-screen items-center justify-center px-4 py-12">
+      <div className="auth-stage paper-texture flex min-h-screen items-center justify-center px-3 py-8 sm:px-4 sm:py-12">
         <DoodleDecor />
         <div
-          className="glass-panel relative z-10 w-full max-w-md p-8 text-center md:p-10"
+          className="glass-panel relative z-10 w-full max-w-md p-5 text-center sm:p-8 md:p-10"
           data-testid="verify-email-prompt"
         >
           <p className="font-display text-4xl font-bold text-ink">
@@ -67,12 +94,15 @@ export function SignupForm() {
   const displayError = localError ?? error;
 
   return (
-    <div className="auth-stage paper-texture flex min-h-screen items-center justify-center px-4 py-12">
+    <div className="auth-stage paper-texture flex min-h-screen items-center justify-center px-3 py-8 sm:px-4 sm:py-12">
       <DoodleDecor />
-      <div className="glass-panel relative z-10 w-full max-w-md p-8 md:p-10">
+      <div className="glass-panel relative z-10 w-full max-w-md p-5 sm:p-8 md:p-10">
         <div className="mb-6 text-center">
-          <p className="font-display text-4xl font-bold text-ink">
-            Join Outreach<span className="text-marker">OS</span>
+          <div className="flex justify-center">
+            <BrandLockup size="lg" href="/" />
+          </div>
+          <p className="mt-3 font-display text-2xl font-bold text-ink">
+            Join the sketchbook
           </p>
           <p className="mt-2 text-sm text-ink-muted">
             Fresh vault · 500 leads · verified email — then you&apos;re dialing.
@@ -148,9 +178,14 @@ export function SignupForm() {
             />
           </div>
 
+          <LegalConsentCheckbox
+            checked={acceptedLegal}
+            onChange={setAcceptedLegal}
+          />
+
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !acceptedLegal}
             className="doodle-btn w-full rounded-md bg-coral/95 py-3 font-label text-sm font-bold uppercase tracking-wider text-ink disabled:opacity-60"
             data-testid="signup-button"
           >
@@ -166,12 +201,18 @@ export function SignupForm() {
 
         <button
           type="button"
-          onClick={() => void signInWithGoogle()}
-          className="doodle-btn w-full rounded-md bg-white/55 py-3 font-label text-sm font-bold uppercase tracking-wider text-ink backdrop-blur-sm"
+          onClick={() => void handleGoogle()}
+          disabled={!acceptedLegal}
+          className="doodle-btn w-full rounded-md bg-white/55 py-3 font-label text-sm font-bold uppercase tracking-wider text-ink backdrop-blur-sm disabled:opacity-60"
           data-testid="google-signup-button"
         >
           Sign up with Google
         </button>
+        {!acceptedLegal && (
+          <p className="mt-2 text-center text-xs text-ink-muted">
+            Accept the policies above to enable Google sign-up.
+          </p>
+        )}
 
         <p className="mt-6 text-center text-sm text-ink-muted">
           Already have an account?{' '}
@@ -180,6 +221,11 @@ export function SignupForm() {
             className="text-marker underline decoration-2 underline-offset-2"
           >
             Sign in
+          </Link>
+        </p>
+        <p className="mt-3 text-center text-xs text-ink-muted">
+          <Link href={LEGAL_PATHS.cookies} className="underline underline-offset-2">
+            Cookie Policy
           </Link>
         </p>
       </div>

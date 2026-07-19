@@ -39,6 +39,9 @@ body {
   background: var(--paper);
   color: var(--ink);
   font-family: var(--font-body), system-ui, sans-serif;
+  overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 .font-display {
@@ -170,8 +173,103 @@ body {
 .auth-stage {
   position: relative;
   min-height: 100vh;
-  overflow: hidden;
+  min-height: 100dvh;
+  overflow-x: clip;
+  overflow-y: auto;
   background: var(--paper);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.safe-px {
+  padding-left: max(1rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1rem, env(safe-area-inset-right, 0px));
+}
+
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Game-style demo tutorial */
+@keyframes tutorial-pulse-ring {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 3px rgba(255, 140, 66, 0.95),
+      0 0 0 10px rgba(255, 140, 66, 0.2);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow:
+      0 0 0 5px rgba(255, 140, 66, 1),
+      0 0 0 18px rgba(255, 140, 66, 0.12);
+    transform: scale(1.01);
+  }
+}
+
+@keyframes tutorial-pointer-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(10px);
+  }
+}
+
+@keyframes tutorial-pointer-bounce-x {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(10px);
+  }
+}
+
+@keyframes tutorial-checkpoint-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+  35% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+}
+
+@keyframes tutorial-mascot-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.tutorial-pulse-ring {
+  animation: tutorial-pulse-ring 1.2s ease-in-out infinite;
+}
+
+.tutorial-pointer-y {
+  animation: tutorial-pointer-bounce 0.85s ease-in-out infinite;
+}
+
+.tutorial-pointer-x {
+  animation: tutorial-pointer-bounce-x 0.85s ease-in-out infinite;
+}
+
+.tutorial-checkpoint-flash {
+  animation: tutorial-checkpoint-pop 0.95s ease-out forwards;
+}
+
+.tutorial-mascot-bob {
+  animation: tutorial-mascot-bob 2.4s ease-in-out infinite;
 }
 
 .sr-only {

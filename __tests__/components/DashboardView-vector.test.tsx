@@ -21,6 +21,7 @@ jest.mock('@/lib/hooks/useLeads', () => ({
     loading: false,
     error: null,
     refetch: jest.fn(),
+    updateLeadStatus: jest.fn(),
   }),
 }));
 
@@ -29,7 +30,16 @@ jest.mock('@/lib/hooks/useFilterOptions', () => ({
     niches: ['Pet Groomer'],
     countries: ['Australia'],
     error: null,
+    refetchOptions: jest.fn(),
   }),
+}));
+
+jest.mock('@/components/quests/QuestBoard', () => ({
+  QuestBoard: () => null,
+}));
+
+jest.mock('@/components/dashboard/LeadStickyNotePanel', () => ({
+  LeadStickyNotePanel: () => null,
 }));
 
 jest.mock('@/lib/hooks/useAuth', () => ({

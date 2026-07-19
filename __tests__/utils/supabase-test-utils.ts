@@ -69,7 +69,7 @@ export async function setupTestDatabase() {
   // Create test leads with various states
   const testLeads = [
     { ...mockLeadData, name: 'Test Business 1', status: 'New' },
-    { ...mockLeadData, name: 'Test Business 2', status: 'Contacted', maps_url: 'https://maps.google.com/test-business-2' },
+    { ...mockLeadData, name: 'Test Business 2', status: 'Called', maps_url: 'https://maps.google.com/test-business-2' },
     { ...mockLeadData, name: 'Test Business 3', status: 'Replied', maps_url: 'https://maps.google.com/test-business-3' },
   ];
   

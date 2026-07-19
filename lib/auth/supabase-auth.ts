@@ -170,6 +170,29 @@ export class AuthService {
     }
   }
 
+  /**
+   * Hydrate the browser Supabase client after a server cookie sign-in.
+   * Cookie-only logins do not reliably fire onAuthStateChange for the singleton client.
+   */
+  async setSessionFromTokens(
+    accessToken: string,
+    refreshToken: string
+  ): Promise<Session | null> {
+    const { data, error } = await this.supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    });
+
+    if (error) {
+      logger.warn('setSession after cookie login failed', {
+        error: error.message,
+      });
+      return this.getCurrentSession();
+    }
+
+    return data.session;
+  }
+
   async getCurrentUser(): Promise<User | null> {
     try {
       const {

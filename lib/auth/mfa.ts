@@ -1,6 +1,13 @@
 import * as OTPAuth from 'otpauth';
 import QRCode from 'qrcode';
 
+import {
+  decryptSecret,
+  encryptSecret,
+  hashBackupCodes,
+  hasEncryptionKeyConfigured,
+  matchAndConsumeBackupCode,
+} from '@/lib/crypto/secrets';
 import { logger } from '@/lib/logger';
 import { SecurityEventType, SecurityLogger } from '@/lib/security-logger';
 
@@ -17,6 +24,18 @@ function createTotp(secret: OTPAuth.Secret, label: string) {
   });
 }
 
+function resolveStoredSecret(stored: string | undefined): string | undefined {
+  if (!stored) return undefined;
+  try {
+    return decryptSecret(stored);
+  } catch (error) {
+    logger.error('Failed to decrypt MFA secret', {
+      message: error instanceof Error ? error.message : 'unknown',
+    });
+    return undefined;
+  }
+}
+
 export class MFAService {
   private authService: AuthService;
 
@@ -24,15 +43,24 @@ export class MFAService {
     this.authService = authService ?? new AuthService();
   }
 
-  async enableMFA(userId: string): Promise<{ secret: string; qrCode: string }> {
+  async enableMFA(
+    userId: string
+  ): Promise<{ secret: string; qrCode: string; backupCodes: string[] }> {
+    if (!hasEncryptionKeyConfigured()) {
+      throw new Error(
+        'ENCRYPTION_KEY is not configured — cannot store MFA secrets securely'
+      );
+    }
+
     const secret = new OTPAuth.Secret({ size: 20 });
     const secretBase32 = secret.base32;
+    const backupCodes = this.generateBackupCodes();
 
     const { error } = await this.authService.supabase.auth.updateUser({
       data: {
-        mfa_secret: secretBase32,
+        mfa_secret: encryptSecret(secretBase32),
         mfa_enabled: false,
-        mfa_backup_codes: this.generateBackupCodes(),
+        mfa_backup_codes: hashBackupCodes(backupCodes),
       },
     });
 
@@ -45,12 +73,14 @@ export class MFAService {
     logger.info('MFA setup initiated', { userId });
     SecurityLogger.log(SecurityEventType.MFA_SETUP, { userId });
 
-    return { secret: secretBase32, qrCode };
+    // Return plaintext secret once for authenticator enrollment only (never re-read from DB as plaintext)
+    return { secret: secretBase32, qrCode, backupCodes };
   }
 
   async verifyAndEnableMFA(userId: string, token: string): Promise<boolean> {
     const user = await this.authService.getCurrentUser();
-    const secret = user?.user_metadata?.mfa_secret as string | undefined;
+    const stored = user?.user_metadata?.mfa_secret as string | undefined;
+    const secret = resolveStoredSecret(stored);
 
     if (!secret) {
       throw new Error('MFA not set up for this user');
@@ -83,15 +113,16 @@ export class MFAService {
   async verifyMFA(userId: string, token: string): Promise<boolean> {
     const user = await this.authService.getCurrentUser();
     const enabled = Boolean(user?.user_metadata?.mfa_enabled);
-    const secret = user?.user_metadata?.mfa_secret as string | undefined;
+    const stored = user?.user_metadata?.mfa_secret as string | undefined;
+    const secret = resolveStoredSecret(stored);
 
     if (!enabled || !secret) {
       return true;
     }
 
     const backupCodes = (user?.user_metadata?.mfa_backup_codes ?? []) as string[];
-    if (backupCodes.includes(token)) {
-      const remaining = backupCodes.filter((code) => code !== token);
+    const { matched, remaining } = matchAndConsumeBackupCode(token, backupCodes);
+    if (matched) {
       await this.authService.supabase.auth.updateUser({
         data: { mfa_backup_codes: remaining },
       });

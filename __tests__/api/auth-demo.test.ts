@@ -61,7 +61,7 @@ describe('POST /api/auth/demo', () => {
       auth: {
         signInWithPassword: jest.fn().mockResolvedValue({
           data: {
-            session: { access_token: 'tok' },
+            session: { access_token: 'tok', refresh_token: 'ref' },
             user: { id: 'demo-1' },
           },
           error: null,
@@ -80,5 +80,7 @@ describe('POST /api/auth/demo', () => {
     expect(response.status).toBe(200);
     expect(body.success).toBe(true);
     expect(body.redirectTo).toBe('/dashboard');
+    expect(body.accessToken).toBe('tok');
+    expect(body.refreshToken).toBe('ref');
   });
 });

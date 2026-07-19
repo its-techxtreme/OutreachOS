@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+import { sanitizeInput } from '@/lib/sanitize';
 import type { Database, Lead, LeadStatus } from '@/types/database.types';
 
 export interface LeadsQueryParams {
@@ -30,8 +31,7 @@ const DEFAULT_PAGE_SIZE = 100;
 const FUZZY_SIMILARITY_THRESHOLD = 0.3;
 
 function sanitizeSearchTerm(term: string): string {
-  return term
-    .trim()
+  return sanitizeInput(term)
     .replace(/[,()"%\\]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
