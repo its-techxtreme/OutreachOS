@@ -1,6 +1,6 @@
 # OutreachOS
 
-> Personal lead vault for cold outreach — import Excel prospects, organize privately, dial with call scripts.
+> Personal lead management vault for cold outreach — import Excel prospects, organize privately, dial with call scripts.
 
 ## Site
 

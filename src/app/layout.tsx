@@ -42,11 +42,28 @@ const siteUrl = getPublicSiteUrl();
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'OutreachOS',
+    default: 'OutreachOS — Personal Lead Management Vault',
     template: '%s | OutreachOS',
   },
   description:
-    'Personal lead pipelines with a sketchbook soul — import, organize, and outreach your way.',
+    'OutreachOS is a personal lead management vault for cold outreach — import Excel leads, keep every account private, filter by niche, and dial with call scripts.',
+  applicationName: 'OutreachOS',
+  keywords: [
+    'OutreachOS',
+    'lead management vault',
+    'personal lead vault',
+    'cold outreach',
+    'Excel lead import',
+    'private CRM',
+    'outreach lead tracker',
+  ],
+  authors: [{ name: 'Techxtreme Digital Studio' }],
+  creator: 'Athan',
+  publisher: 'Techxtreme Digital Studio',
+  category: 'business',
+  alternates: {
+    canonical: '/',
+  },
   icons: {
     icon: [
       { url: '/brand/outreachos-logo-192.png', sizes: '192x192', type: 'image/png' },
@@ -56,28 +73,32 @@ export const metadata: Metadata = {
     apple: [{ url: '/brand/outreachos-logo-512.png', sizes: '512x512' }],
   },
   openGraph: {
-    title: 'OutreachOS',
+    title: 'OutreachOS — Personal Lead Management Vault',
     description:
-      'Personal lead pipelines with a sketchbook soul — import, organize, and outreach your way.',
+      'Personal lead management vault for cold outreach. Import Excel prospects, organize privately, dial with call scripts.',
     url: siteUrl,
     siteName: 'OutreachOS',
+    locale: 'en_US',
     type: 'website',
     images: [
       {
         url: '/brand/og-outreachos.png',
         width: 1200,
         height: 630,
-        alt: 'OutreachOS — personal lead vault',
+        alt: 'OutreachOS — personal lead management vault',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'OutreachOS',
+    title: 'OutreachOS — Personal Lead Management Vault',
     description:
-      'Personal lead pipelines with a sketchbook soul — import, organize, and outreach your way.',
+      'Personal lead management vault for cold outreach. Import, organize, dial.',
     images: ['/brand/og-outreachos.png'],
   },
+  verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+    : undefined,
 };
 
 export default function RootLayout({

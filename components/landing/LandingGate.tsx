@@ -87,7 +87,7 @@ export function LandingGate() {
             />
           </div>
           <p className="mb-3 font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-muted sm:mb-4 sm:text-xs sm:tracking-[0.2em]">
-            cold outreach, without the spreadsheet headache
+            personal lead management vault for cold outreach
           </p>
           <h1 className="font-display text-[2.75rem] font-bold leading-[0.95] tracking-tight text-ink sm:text-6xl md:text-7xl lg:text-8xl">
             Outreach<span className="text-marker">OS</span>
@@ -97,9 +97,9 @@ export function LandingGate() {
             <span className="highlighter-wash px-1">Nobody else&apos;s mess.</span>
           </p>
           <p className="mx-auto mt-4 max-w-xl px-1 text-sm leading-relaxed text-ink-muted sm:mt-5 sm:text-lg md:text-xl">
-            Stop hunting contacts across tabs and half-finished sheets. Drop them
-            in, filter what matters today, and keep every account private — like
-            a notebook that actually stays organized.
+            OutreachOS is a personal lead management vault — import Excel
+            prospects, filter by niche or country, and keep every account
+            private so cold outreach stays organized.
           </p>
 
           <div className="mt-8 flex w-full flex-col items-stretch justify-center gap-3 sm:mt-10 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">

@@ -3,7 +3,6 @@ import Link from 'next/link';
 
 import { BrandLockup } from '@/components/brand/BrandLockup';
 import { SiteFooter } from '@/components/site/SiteFooter';
-import { APP_NAME } from '@/lib/brand';
 import {
   DEMO_MAX_IMPORT_ROWS,
   MAX_IMPORT_FILE_BYTES,
@@ -11,9 +10,15 @@ import {
 } from '@/lib/import/constants';
 
 export const metadata: Metadata = {
-  title: `Import guide | ${APP_NAME}`,
+  title: 'Excel import guide for your lead management vault',
   description:
-    'Excel format tips for importing leads into OutreachOS — columns, aliases, and common failure reasons.',
+    'OutreachOS Excel import guide — column aliases, Maps links, and format tips for your personal lead management vault.',
+  keywords: [
+    'OutreachOS import',
+    'Excel lead import',
+    'lead management vault',
+    'import leads Excel',
+  ],
   alternates: {
     canonical: '/import-guide',
   },

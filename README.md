@@ -170,6 +170,7 @@ npm run audit:secrets
 | --- | --- |
 | [API Spec](./docs/API_SPECIFICATION.md) | Agent endpoint shapes |
 | [Deployment](./docs/DEPLOYMENT_GUIDE.md) | Vercel / prod notes |
+| [SEO / Search Console](./docs/SEO_SEARCH_CONSOLE.md) | Index `outreachos.techxtreme.me` in Google |
 | [Security](./docs/SECURITY_REQUIREMENTS.md) | Auth expectations |
 | [Architecture](./docs/TECHNICAL_ARCHITECTURE.md) | How pieces fit |
 | [Custom GPT](./docs/chatgpt/CUSTOM_GPT_INSTRUCTIONS.md) | Agent setup |

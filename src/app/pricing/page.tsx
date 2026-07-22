@@ -7,12 +7,13 @@ import { PREMIUM_PRICE_INR, PREMIUM_PRICE_USD } from '@/lib/billing/razorpay';
 import { getPublicSiteUrl } from '@/lib/seo/site-url';
 
 export const metadata: Metadata = {
-  title: 'Pricing',
+  title: 'Pricing — Free lead vault & Premium unlimited',
   description:
-    'OutreachOS pricing — Free for 500 leads, Premium at ₹1499 or $15 per month for unlimited vaults and higher Excel import limits.',
+    'OutreachOS pricing for your personal lead management vault. Free for 500 leads, or Premium at ₹1499 / $15 per month for unlimited leads.',
+  keywords: ['OutreachOS pricing', 'lead management vault', 'Premium lead vault'],
   alternates: { canonical: '/pricing' },
   openGraph: {
-    title: 'Pricing | OutreachOS',
+    title: 'OutreachOS Pricing — Lead Management Vault',
     description:
       'Free vs Premium for personal lead vaults. ₹1499 / $15 monthly.',
     url: '/pricing',
