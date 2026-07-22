@@ -38,6 +38,9 @@ describe('SiteFooter', () => {
       'href',
       '/cookies'
     );
+    expect(
+      screen.getByRole('link', { name: /^accessibility$/i })
+    ).toHaveAttribute('href', '/accessibility');
     expect(screen.getByRole('link', { name: /contact/i })).toHaveAttribute(
       'href',
       expect.stringContaining('mailto:')

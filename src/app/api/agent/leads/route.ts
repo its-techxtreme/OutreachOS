@@ -1,3 +1,8 @@
+/**
+ * Legacy agent lead intake (early ChatGPT experiment).
+ * Not advertised in v1 — Excel import is the product path.
+ * Kept in-tree as a foundation for a possible GPT agent feature in v2.
+ */
 import { randomUUID } from 'crypto';
 
 import { NextResponse } from 'next/server';
@@ -241,7 +246,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       leadId: result.id,
       niche: parsed.data.lead.niche,
       country: parsed.data.lead.country,
-      source: parsed.data.metadata?.source ?? 'chatgpt',
+      source: parsed.data.metadata?.source ?? 'api',
       userId: authResult.userId,
     });
 

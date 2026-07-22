@@ -21,5 +21,7 @@ describe('sanitize utilities', () => {
   it('sanitizeInput removes injection and traversal patterns', () => {
     expect(sanitizeInput('<script>x</script>../etc')).not.toContain('../');
     expect(sanitizeInput('${jndi:ldap://x}')).not.toContain('${jndi:');
+    expect(sanitizeInput('....//secret')).not.toContain('../');
+    expect(sanitizeInput('<style>body{}</style>Hello')).toBe('Hello');
   });
 });

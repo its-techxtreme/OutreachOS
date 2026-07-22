@@ -268,8 +268,8 @@ export function DashboardView() {
         {!loading && !error && leads.length === 0 && !isVectorView && (
           <div data-testid="empty-leads-state">
             <MascotCallout mascot="adventurer" title="Blank page — for now">
-              Your vault is empty. Import an Excel file or wait for agent
-              submissions to start filling this sketchbook.
+              Your vault is empty. Import an Excel file to start filling this
+              sketchbook.
             </MascotCallout>
           </div>
         )}

@@ -48,9 +48,8 @@ export default function PrivacyPolicyPage() {
         <p>
           {APP_NAME} is a personal lead-management tool. You can create an
           account, import business contact leads (for example from spreadsheets),
-          organize and filter them, export lists, and optionally submit leads via
-          an authenticated agent API. Each regular user’s leads are kept in their
-          own vault and are not shared with other customers.
+          organize and filter them, and export lists. Each regular user’s leads
+          are kept in their own vault and are not shared with other customers.
         </p>
       </LegalSection>
 
@@ -96,8 +95,7 @@ export default function PrivacyPolicyPage() {
             infrastructure logs).
           </li>
           <li>
-            From authorized agent API submissions using your credentials or
-            configured secrets.
+            From Excel / CSV imports and data you enter in the app.
           </li>
         </ul>
       </LegalSection>

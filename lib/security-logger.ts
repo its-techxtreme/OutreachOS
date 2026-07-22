@@ -1,3 +1,8 @@
+/**
+ * Security event logging — event codes only, no secrets/passwords in the payload.
+ * User passwords never belong here (Supabase Auth owns those).
+ */
+
 export enum SecurityEventType {
   AUTH_FAILURE = 'AUTH_FAILURE',
   AUTH_SUCCESS = 'AUTH_SUCCESS',
@@ -29,24 +34,51 @@ interface SecurityLogDetails {
   [key: string]: unknown;
 }
 
+const SAFE_DETAIL_KEYS = new Set([
+  'requestId',
+  'ip',
+  'userAgent',
+  'path',
+  'message',
+  'userId',
+  'reason',
+  'statusCode',
+]);
+
+function publicDetails(details: SecurityLogDetails): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(details)) {
+    if (!SAFE_DETAIL_KEYS.has(key)) continue;
+    if (typeof value === 'string') {
+      out[key] = value.slice(0, 200);
+      continue;
+    }
+    if (typeof value === 'number' || typeof value === 'boolean' || value == null) {
+      out[key] = value;
+    }
+  }
+  return out;
+}
+
 export class SecurityLogger {
   static log(
     event: SecurityEventType,
     details: SecurityLogDetails = {},
     ip?: string
   ): void {
-    const logEntry = {
+    // Log a code + safe metadata only — never tokens, passwords, or raw API keys
+    const line = {
       timestamp: new Date().toISOString(),
-      event,
-      details,
+      event: String(event),
+      details: publicDetails(details),
       ip: ip ?? details.ip,
     };
 
     if (process.env.NODE_ENV === 'production') {
-      console.error('SECURITY_EVENT', logEntry);
+      console.error('SECURITY_EVENT', JSON.stringify(line));
       return;
     }
 
-    console.warn('Security Event:', logEntry);
+    console.warn('Security Event:', JSON.stringify(line));
   }
 }

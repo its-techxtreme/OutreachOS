@@ -1,45 +1,37 @@
-# Security Requirements
-**Authentication & RLS Implementation Guide**
+# Security notes
 
-## API Authentication Pattern
+Auth, secrets, and RLS expectations for OutreachOS. Code samples below are illustrative — prefer the live routes under `src/app/api/`.
 
-### Custom Header Authentication
-The `/api/agent/leads` route enforces a strict custom header verification handshake to ensure secure communication between the ChatGPT Agent and the Next.js application.
+## Legacy agent route
 
-#### Implementation Requirements
+`POST /api/agent/leads` still exists from an early ChatGPT experiment (**scrapped as a product feature**). If the env var is set, it expects header `X-Agent-Secret` matching `AGENT_SECRET`. Normal users should use Excel import instead.
 ```typescript
-// app/api/agent/leads/route.ts
+// illustrative — real route lives under src/app/api/agent/leads
 export async function POST(request: Request) {
-  // Extract and validate X-Agent-Secret header
   const agentSecret = request.headers.get('X-Agent-Secret');
-  
+
   if (!agentSecret || agentSecret !== process.env.AGENT_SECRET) {
     return NextResponse.json(
       { success: false, error: 'Unauthorized' },
       { status: 401 }
     );
   }
-  
-  // Continue with request processing
+
+  // …insert lead
 }
 ```
 
-#### Security Considerations
-- **Environment Variable Storage:** The `AGENT_SECRET` must be stored securely in Vercel environment variables
-- **Header Validation:** Server-side validation against explicit environment variable (`AGENT_SECRET`)
-- **Key Rotation:** Agent secret should be rotatable without code changes
-- **Logging:** Log failed authentication attempts without exposing the secret value
+Keep `AGENT_SECRET` in Vercel env only. Rotate it when you need to. Log failed attempts without printing the secret.
 
-### Database Service Role Key Protection
+## Service role key
 
-#### Critical Security Rule
-The database service role keys (`SUPABASE_SERVICE_ROLE_KEY`) must **NEVER** be:
+`SUPABASE_SERVICE_ROLE_KEY` must **never** be:
 - Bundled into the client-side build
 - Exposed in browser environments
-- Shared within any Custom GPT prompt file
+- Shared in client bundles or public docs
 - Logged or transmitted in plain text
 
-#### Implementation Pattern
+#### Example (server client)
 ```typescript
 // lib/supabase-server.ts - Server-side only
 import { createClient } from '@supabase/supabase-js';

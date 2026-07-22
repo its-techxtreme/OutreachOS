@@ -46,7 +46,7 @@ export default function TermsOfServicePage() {
         <p>
           {APP_NAME} provides personal lead vault features such as account
           authentication, spreadsheet import, filtering, status tracking,
-          export, and optional agent API intake. Features, quotas, and
+          export. Features, quotas, and
           availability may change as we improve the product.
         </p>
         <p>

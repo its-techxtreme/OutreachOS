@@ -1,5 +1,3 @@
-import { createHash } from 'crypto';
-
 import {
   AgentSecretStrategy,
   ApiKeyStrategy,
@@ -9,9 +7,12 @@ import {
 } from '@/lib/auth';
 
 describe('auth hash utilities', () => {
-  it('hashes api keys consistently', () => {
-    const hash = hashApiKey('test-key');
-    expect(hash).toBe(createHash('sha256').update('test-key').digest('hex'));
+  it('hashes api keys consistently with scrypt', () => {
+    const a = hashApiKey('test-key');
+    const b = hashApiKey('test-key');
+    expect(a).toBe(b);
+    expect(a).toMatch(/^[a-f0-9]{64}$/);
+    expect(a).not.toBe(hashApiKey('other-key'));
   });
 
   it('validates configured api keys from environment', () => {

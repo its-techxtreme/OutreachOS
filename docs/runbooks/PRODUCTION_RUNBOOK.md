@@ -1,12 +1,14 @@
-# OutreachOS Production Runbook
+# OutreachOS — production runbook
+
+Quick notes for when something’s on fire.
 
 ## Service overview
 | Component | Provider | Notes |
 |-----------|----------|--------|
 | App | Vercel (Next.js 16) | Regions `iad1` / `sfo1` |
 | Database / Auth | Supabase project `outreachos` (`qowwnchhyjnfovxcjiqw`) | RLS enabled |
-| Agent ingress | `POST /api/agent/leads` | `X-Agent-Secret` |
-| Admin UI | `/dashboard`, `/settings` | Supabase session |
+| Lead intake | Excel import `/api/leads/import` | Quotas apply |
+| Admin UI | `/dashboard`, `/settings`, `/admin/*` | Supabase session |
 
 ## Health checks
 ```bash
@@ -22,22 +24,18 @@ Healthy response includes `status: "healthy"`, `checks.database: true`, `checks.
 | GET | `/api/admin/metrics` | Session + `SYSTEM_METRICS` |
 | POST | `/api/admin/validate-migration` | Session + admin/super_admin |
 | GET | `/api/leads` | Session |
-| POST | `/api/agent/leads` | Agent secret / API key |
+| POST | `/api/leads/import` | Session |
 
 ## Common incidents
 
 ### 503 on `/api/health`
 1. Confirm Supabase project is `ACTIVE_HEALTHY`
-2. Confirm Vercel env vars for Supabase + `AGENT_SECRET`
+2. Confirm Vercel env vars for Supabase (+ `ENCRYPTION_KEY`, auth URLs)
 3. Check Vercel runtime logs for the deployment
-
-### Agent submissions returning 401
-1. Verify `AGENT_SECRET` matches Custom GPT Action auth header
-2. Confirm `ALLOWED_ORIGINS` includes ChatGPT origins if browser preflight fails
 
 ### Admin cannot log in
 1. Confirm Supabase Auth Site URL / redirect allow-list matches production domain
-2. Re-run `npm run ensure:admin` with production service role key
+2. Re-run `npm run ensure:accounts` with production service role key
 3. Check MFA status on `/settings` if previously enrolled
 
 ### Elevated error rate

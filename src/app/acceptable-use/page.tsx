@@ -99,11 +99,12 @@ export default function AcceptableUsePage() {
         </ul>
       </LegalSection>
 
-      <LegalSection title="5. Agent API and automation">
+      <LegalSection title="5. Automation">
         <p>
-          If you use the agent API or other automation, you remain responsible
-          for every lead submitted under your credentials or secrets. Keep API
-          secrets confidential and rotate them if exposed.
+          Bulk imports and scripts are fine when they stay within your account
+          quotas and this policy. Do not share secrets, scrape in ways that
+          violate third-party terms, or hammer the Service to degrade it for
+          others.
         </p>
       </LegalSection>
 

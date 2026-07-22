@@ -18,7 +18,7 @@ describe('SecurityLogger', () => {
 
     SecurityLogger.log(SecurityEventType.INVALID_API_KEY, { requestId: 'req-456' });
 
-    expect(errorSpy).toHaveBeenCalledWith('SECURITY_EVENT', expect.any(Object));
+    expect(errorSpy).toHaveBeenCalledWith('SECURITY_EVENT', expect.any(String));
     errorSpy.mockRestore();
     process.env = { ...process.env, NODE_ENV: originalNodeEnv };
   });

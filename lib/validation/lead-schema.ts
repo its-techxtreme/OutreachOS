@@ -35,7 +35,7 @@ export const LeadSubmissionSchema = z.object({
   lead: LeadSchema,
   metadata: z
     .object({
-      source: z.string().default('chatgpt'),
+      source: z.string().default('api'),
       version: z.string().default('1.0'),
     })
     .optional(),

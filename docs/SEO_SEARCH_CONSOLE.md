@@ -2,63 +2,61 @@
 
 Canonical site: **https://outreachos.techxtreme.me**
 
-Technical SEO (sitemap, robots, metadata, JSON-LD) ships with the app. Google still will not list you until you **claim the property** and ask it to crawl.
+The app already ships sitemap, robots, metadata, and JSON-LD. Google still needs you to claim the property and nudge a crawl.
 
-## 1. Add the site in Google Search Console (required — you do this)
+## 1. Search Console property
 
-1. Open [Google Search Console](https://search.google.com/search-console)
-2. **Add property** → choose **URL prefix**
-3. Enter exactly: `https://outreachos.techxtreme.me`
-4. Verify ownership (pick one):
-   - **HTML tag**: copy the `content="…"` value → set Vercel env  
-     `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=<that value>` → redeploy  
-     (the app already reads this into `<meta name="google-site-verification">`)
-   - **DNS TXT** on `techxtreme.me` at Namecheap (works for the whole domain)
-5. Click **Verify**
+Two fine options:
+
+**A. Domain property (`techxtreme.me`)** — covers every subdomain, including OutreachOS. Verify with a DNS TXT at your registrar. This is what we’re using.
+
+**B. URL-prefix** — `https://outreachos.techxtreme.me` only. HTML tag verification works via:
+
+```text
+NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=<content value from Search Console>
+```
+
+Redeploy after setting it. The app puts that into `<meta name="google-site-verification">`.
 
 ## 2. Submit the sitemap
 
-After verification:
+Sitemaps → add:
 
-1. Left menu → **Sitemaps**
-2. Add: `https://outreachos.techxtreme.me/sitemap.xml`
-3. Submit
+`https://outreachos.techxtreme.me/sitemap.xml`
 
-Live checks:
+Sanity checks:
 
 - https://outreachos.techxtreme.me/robots.txt
 - https://outreachos.techxtreme.me/sitemap.xml
 
-## 3. Request indexing for key pages
+## 3. Request indexing (a few key URLs)
 
-**URL Inspection** → paste each URL → **Request indexing**:
+URL Inspection → Request indexing (don’t spam it):
 
-1. `https://outreachos.techxtreme.me/`
-2. `https://outreachos.techxtreme.me/pricing`
-3. `https://outreachos.techxtreme.me/import-guide`
-4. `https://outreachos.techxtreme.me/auth/signup`
+1. `/`
+2. `/pricing`
+3. `/import-guide`
+4. `/auth/signup`
 
-Do a few per day; Google rate-limits requests.
+## 4. Timing
 
-## 4. What to expect
-
-| Query | Realistic timing |
+| Query | Rough expectation |
 | --- | --- |
-| `OutreachOS` / `outreachos` | Days–weeks after indexing (brand match) |
-| `lead management vault` | Weeks–months; competitive; needs backlinks + more pages |
+| `OutreachOS` | Days to a few weeks after indexing |
+| Broad phrases like “lead management vault” | Slow; needs links + more public pages |
 
-Ranking top 5–7 for broad phrases is **not** guaranteed by code alone. Brand search (`OutreachOS`) is the first win.
+Brand search comes first. Broad ranking isn’t something code alone guarantees.
 
-## 5. Optional boosts
+## 5. Extra links that help
 
-- Link **https://outreachos.techxtreme.me** from your portfolio (`techxtreme.me` / `.is-a.dev`), GitHub README, and social bios
-- Keep publishing useful public pages (guides beat empty shells)
-- Bing Webmaster can ingest the same sitemap (feeds some AI surfaces)
+- Portfolio: [techxtreme.me](https://techxtreme.me) / case study `/work/outreachos`
+- GitHub repo homepage + README
+- Bio / social if you use them
 
-## Env reminder (Vercel Production)
+## Env (Vercel Production)
 
 ```text
 NEXT_PUBLIC_APP_URL=https://outreachos.techxtreme.me
 NEXT_PUBLIC_SITE_URL=https://outreachos.techxtreme.me
-NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=  # paste from Search Console HTML tag
+NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=  # only if using HTML-tag verify
 ```

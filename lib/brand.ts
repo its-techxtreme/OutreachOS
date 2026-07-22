@@ -12,4 +12,5 @@ export const LEGAL_PATHS = {
   terms: '/terms',
   acceptableUse: '/acceptable-use',
   cookies: '/cookies',
+  accessibility: '/accessibility',
 } as const;

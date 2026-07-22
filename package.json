@@ -2,6 +2,13 @@
   "name": "outreachos",
   "version": "0.1.0",
   "private": true,
+  "description": "Personal lead vault for cold outreach — Excel import, filters, call scripts.",
+  "author": "Athan (Techxtreme)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/its-techxtreme/OutreachOS.git"
+  },
+  "homepage": "https://outreachos.techxtreme.me",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -105,5 +112,24 @@
     "tailwindcss": "^4",
     "ts-jest": "^29.4.11",
     "typescript": "^5"
+  },
+  "overrides": {
+    "brace-expansion@1": "1.1.16",
+    "minimatch@10": {
+      "brace-expansion": "5.0.7"
+    },
+    "minimatch@9": {
+      "brace-expansion": "5.0.7"
+    },
+    "exceljs": {
+      "uuid": "^11.1.1"
+    },
+    "postcss": "^8.5.10",
+    "js-yaml": "^4.1.1",
+    "@sentry/node": {
+      "cookie": "^0.7.2"
+    },
+    "fast-uri": "3.1.4",
+    "sharp": "^0.35.3"
   }
 }

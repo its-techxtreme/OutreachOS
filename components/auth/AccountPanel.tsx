@@ -658,6 +658,7 @@ export function AccountPanel({ user }: { user: User }) {
             ['/privacy', 'Privacy'],
             ['/cookies', 'Cookies'],
             ['/acceptable-use', 'Acceptable Use'],
+            ['/accessibility', 'Accessibility'],
           ].map(([href, label]) => (
             <li key={href}>
               <Link

@@ -8,12 +8,15 @@ type LegalDocumentProps = {
   title: string;
   effectiveDate: string;
   children: ReactNode;
+  /** Eyebrow above the title — defaults to Legal */
+  eyebrow?: string;
 };
 
 export function LegalDocument({
   title,
   effectiveDate,
   children,
+  eyebrow = 'Legal',
 }: LegalDocumentProps) {
   return (
     <div
@@ -33,7 +36,7 @@ export function LegalDocument({
 
       <main className="safe-px relative z-10 mx-auto w-full max-w-3xl flex-1 px-4 pb-12 sm:px-6 sm:pb-16 md:px-10">
         <p className="font-label text-xs font-semibold uppercase tracking-[0.18em] text-ink-muted">
-          Legal
+          {eyebrow}
         </p>
         <h1 className="mt-2 font-display text-4xl font-bold tracking-tight text-ink sm:text-5xl md:text-6xl">
           {title}

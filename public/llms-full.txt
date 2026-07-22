@@ -1,17 +1,17 @@
-# OutreachOS — full summary
+# OutreachOS — longer summary
 
-OutreachOS (https://outreachos.techxtreme.me) is a personal lead management and outreach workspace with a sketchbook-style UI.
+OutreachOS (https://outreachos.techxtreme.me) is a personal lead vault with a sketchbook-style UI.
 
-## Who it is for
+## Who it’s for
 
-Solo founders, SDRs, and operators who import lead lists from Excel, keep them private per account, and work a call/email queue without a heavyweight CRM.
+Solo founders and operators who import lists from Excel, keep them private, and work a call queue without a heavy CRM.
 
-## Core flows
+## Main flow
 
-1. Sign up (email+password with verification, or Google).
-2. Import Excel (.xlsx) with Business Name (required) plus niche, country, phone, address, Google Maps link.
-3. Filter and select leads; use sticky call scripts while dialing.
-4. Upgrade to Premium when the free 500-lead pool is full or import limits are hit.
+1. Sign up (email + password, or Google).
+2. Import Excel (`.xlsx`) — business name required; niche, country, phone, address, Maps link optional/helpful.
+3. Filter, dial with sticky scripts, export CSV when needed.
+4. Request Premium from `/pricing` when free limits get in the way.
 
 ## Plans
 
@@ -20,8 +20,7 @@ Solo founders, SDRs, and operators who import lead lists from Excel, keep them p
 | Free | 500 | 10 / day | 200 / file |
 | Premium | Unlimited | 30 / hour | 3000 / hour |
 
-Premium prices: ₹1499/month or $15/month (buyer chooses currency on /pricing).
-Request Premium from /pricing — opens email to techxtremebuisness@gmail.com with your username pre-filled.
+Premium: ₹1499/month or $15/month. Request via email from `/pricing` (username pre-filled).
 
 ## Public URLs
 
@@ -32,4 +31,4 @@ Request Premium from /pricing — opens email to techxtremebuisness@gmail.com wi
 - https://outreachos.techxtreme.me/terms
 - https://outreachos.techxtreme.me/auth/signup
 
-Authenticated app shells (/dashboard, /settings, /admin) are private and should not be indexed.
+`/dashboard`, `/settings`, `/admin` stay private and shouldn’t be indexed.

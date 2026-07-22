@@ -13,6 +13,7 @@ const FOOTER_LINKS = [
   { href: LEGAL_PATHS.terms, label: 'Terms' },
   { href: LEGAL_PATHS.acceptableUse, label: 'Acceptable Use' },
   { href: LEGAL_PATHS.cookies, label: 'Cookies' },
+  { href: LEGAL_PATHS.accessibility, label: 'Accessibility' },
   { href: '/pricing', label: 'Pricing' },
   { href: '/import-guide', label: 'Import guide' },
   { href: `mailto:${SUPPORT_EMAIL}`, label: 'Contact' },
@@ -35,7 +36,7 @@ export function SiteFooter() {
           </div>
 
           <nav
-            aria-label="Legal and contact"
+            aria-label="Site policies and contact"
             className="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3 sm:gap-x-6 md:flex md:flex-wrap md:content-start md:justify-end md:gap-x-5 md:gap-y-1 lg:max-w-xl"
           >
             {FOOTER_LINKS.map((link) => (

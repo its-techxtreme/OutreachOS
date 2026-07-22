@@ -1,4 +1,6 @@
-# Disaster Recovery & Backup Procedures
+# Disaster recovery
+
+Keep it boring: backups exist, migrations are in git, Vercel can promote an old deploy.
 
 ## Recovery objectives
 | Metric | Target |
@@ -17,14 +19,11 @@
 3. After each release, run `POST /api/admin/validate-migration` as admin
 
 ## Database restore procedure
-1. Pause agent traffic (disable Custom GPT Action or rotate `AGENT_SECRET` temporarily)
+1. Pause write traffic if needed (disable imports / rotate secrets temporarily)
 2. In Supabase Dashboard, restore from the chosen backup / PITR timestamp
-3. Re-apply any migrations newer than the restore point:
-   - `001_create_leads_table.sql`
-   - `002_leads_search_rpc.sql`
-   - `003_production_observability.sql`
+3. Re-apply any migrations newer than the restore point (`supabase/migrations/001` … `009` as needed)
 4. Run migration validator; confirm `/api/health` is healthy
-5. Re-enable agent traffic
+5. Smoke-test login + Excel import
 
 ## Application rollback
 1. Vercel → Deployments → select last known-good production deployment → **Promote**
@@ -32,9 +31,9 @@
 3. If schema and app are incompatible, restore DB to matching migration revision first
 
 ## Credential compromise response
-1. Rotate `AGENT_SECRET` in Vercel + Custom GPT Action
-2. Rotate `SUPABASE_SERVICE_ROLE_KEY` if leaked (Supabase → Settings → API → regenerate carefully)
-3. Force password reset for admin users; revoke sessions if available
+1. Rotate `SUPABASE_SERVICE_ROLE_KEY` if leaked (Supabase → Settings → API → regenerate carefully)
+2. Rotate `ENCRYPTION_KEY` / admin passwords as needed; revoke sessions if available
+3. If the legacy agent route is still enabled, rotate `AGENT_SECRET` too
 4. Review `audit_logs` for suspicious actions
 
 ## Data integrity checks after restore

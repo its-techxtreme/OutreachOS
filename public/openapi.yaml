@@ -1,34 +1,29 @@
 openapi: 3.0.0
 info:
-  title: OutreachOS Lead Management API
+  title: OutreachOS Lead Management API (legacy)
   description: |
-    OutreachOS API for automated lead management and deduplication.
+    **RETIRED — ChatGPT / Custom GPT intake was scrapped.**
+    Use Excel import in the app instead (`/import-guide`).
 
-    This API allows ChatGPT agents to submit lead data collected from Google Maps
-    and other sources. The system automatically handles deduplication based on
-    Google Maps URLs and provides comprehensive lead management capabilities.
+    This file only documents the leftover `POST /api/agent/leads` route for
+    maintainers. It is not a supported product feature.
 
-    ## Authentication
-    All requests must include the `X-Agent-Secret` header with a valid secret key,
-    or a `Authorization: Bearer <api-key>` header for programmatic access.
+    ## Authentication (legacy)
+    `X-Agent-Secret` or `Authorization: Bearer <api-key>` if configured.
 
-    ## Rate Limiting
-    - 100 requests per minute per agent (X-Agent-Secret)
-    - 1000 requests per minute for API key users
-
-    ## Error Handling
-    The API uses conventional HTTP response codes and returns detailed error
-    information in JSON format for debugging and retry logic.
-  version: 1.0.0
+    ## Rate limiting (legacy)
+    - 100 req/min per agent secret
+    - 1000 req/min for API keys
+  version: 1.0.0-legacy
   contact:
-    name: OutreachOS API Support
-    email: support@outreachos.local
+    name: OutreachOS
+    email: techxtremebuisness@gmail.com
 
 servers:
-  - url: https://your-domain.vercel.app
-    description: Production server
+  - url: https://outreachos.techxtreme.me
+    description: Production
   - url: http://localhost:3000
-    description: Development server
+    description: Local development
 
 paths:
   /api/agent/leads:
@@ -63,7 +58,7 @@ paths:
                     address: 123 Design Ave, New York, NY 10001
                     maps_url: https://maps.google.com/place?cid=123456789
                   metadata:
-                    source: chatgpt
+                    source: api
                     version: "1.0"
       responses:
         '200':
@@ -172,7 +167,7 @@ components:
       properties:
         source:
           type: string
-          default: chatgpt
+          default: api
         version:
           type: string
           default: "1.0"
@@ -253,7 +248,7 @@ components:
       type: apiKey
       in: header
       name: X-Agent-Secret
-      description: Secret key for ChatGPT agent authentication
+      description: Legacy shared secret (agent intake retired as a product feature)
     BearerAuth:
       type: http
       scheme: bearer
