@@ -48,7 +48,7 @@ describe('SiteFooter', () => {
     );
     expect(screen.getByText(/Techxtreme Digital Studio/i)).toBeInTheDocument();
     expect(screen.getByTestId('footer-made-by')).toHaveTextContent(
-      /Made by "Athan"/
+      /A Personal Project Made by Athan/
     );
   });
 });

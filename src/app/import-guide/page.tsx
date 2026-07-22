@@ -72,11 +72,11 @@ export default function ImportGuidePage() {
   const maxMb = MAX_IMPORT_FILE_BYTES / (1024 * 1024);
 
   return (
-    <div className="paper-texture min-h-screen">
-      <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-8 sm:px-6 sm:py-12">
-        <header className="doodle-border bg-paper px-5 py-5">
+    <div className="paper-texture min-h-screen min-h-[100dvh]">
+      <main className="safe-px mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:gap-8 sm:px-6 sm:py-12">
+        <header className="doodle-border bg-paper px-4 py-5 sm:px-5">
           <BrandLockup size="md" href="/" />
-          <h1 className="mt-4 font-display text-3xl font-bold text-ink">
+          <h1 className="mt-4 font-display text-3xl font-bold text-ink sm:text-4xl">
             Excel import guide
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-ink-muted">
@@ -95,7 +95,7 @@ export default function ImportGuidePage() {
           </p>
         </header>
 
-        <section className="doodle-border bg-paper px-5 py-5">
+        <section className="doodle-border bg-paper px-4 py-5 sm:px-5">
           <h2 className="font-display text-xl font-bold text-ink">
             Best layout
           </h2>
@@ -111,9 +111,9 @@ export default function ImportGuidePage() {
           </ul>
         </section>
 
-        <section className="doodle-border bg-paper px-5 py-5">
+        <section className="doodle-border bg-paper px-4 py-5 sm:px-5">
           <h2 className="font-display text-xl font-bold text-ink">Columns</h2>
-          <div className="mt-4 overflow-x-auto">
+          <div className="mt-4 -mx-1 overflow-x-auto overscroll-x-contain px-1">
             <table className="w-full min-w-[36rem] border-collapse text-left text-sm">
               <thead>
                 <tr className="border-b border-ink/30 text-[11px] uppercase tracking-wider text-ink-muted">

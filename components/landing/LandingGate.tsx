@@ -43,74 +43,75 @@ export function LandingGate() {
     >
       <DoodleDecor />
 
-      <header className="safe-px relative z-10 flex items-center justify-between gap-3 px-4 py-4 sm:px-6 sm:py-6 md:px-10">
+      <header className="safe-px safe-py relative z-10 flex items-center justify-between gap-2 px-4 py-3 sm:gap-3 sm:px-6 sm:py-5 md:px-10">
         <BrandLockup size="md" href="/" />
-        <div className="flex shrink-0 items-center gap-3 sm:gap-4">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-4">
           <Link
             href="/pricing"
-            className="hidden font-label text-sm font-semibold uppercase tracking-wide text-ink-muted underline decoration-2 underline-offset-4 hover:text-ink sm:inline"
+            className="touch-target inline-flex items-center font-label text-[11px] font-semibold uppercase tracking-wide text-ink-muted underline decoration-2 underline-offset-4 hover:text-ink sm:text-sm"
           >
             Pricing
           </Link>
           <Link
             href="/auth/signup"
-            className="hidden font-label text-sm font-semibold uppercase tracking-wide text-ink-muted underline decoration-2 underline-offset-4 hover:text-ink md:inline"
+            className="hidden touch-target items-center font-label text-sm font-semibold uppercase tracking-wide text-ink-muted underline decoration-2 underline-offset-4 hover:text-ink sm:inline-flex"
           >
             Get started
           </Link>
           <Link
             href="/auth/login"
-            className="touch-target inline-flex items-center font-label text-sm font-semibold uppercase tracking-wide text-ink-muted underline decoration-2 underline-offset-4 hover:text-ink"
+            className="touch-target inline-flex items-center font-label text-[11px] font-semibold uppercase tracking-wide text-ink-muted underline decoration-2 underline-offset-4 hover:text-ink sm:text-sm"
           >
             Sign in
           </Link>
         </div>
       </header>
 
-      <main className="safe-px relative z-10 mx-auto flex min-h-[70vh] max-w-5xl flex-col items-center justify-center px-4 pb-10 text-center sm:min-h-[78vh] sm:px-6 sm:pb-12">
+      <main className="safe-px relative z-10 mx-auto flex min-h-[62vh] max-w-5xl flex-col items-center justify-center px-4 pb-10 text-center sm:min-h-[72vh] sm:px-6 sm:pb-12 md:min-h-[78vh]">
         <motion.div
           initial={reduceMotion ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.55, ease: 'easeOut' }}
-          className="w-full"
+          className="w-full max-w-3xl"
         >
-          <div className="mx-auto mb-5 flex justify-center sm:mb-6">
+          <div className="mx-auto mb-4 flex justify-center sm:mb-6">
             <Image
               src="/brand/outreachos-logo-512.png"
               alt="OutreachOS logo — sketchbook with outreach compass"
               width={160}
               height={160}
               priority
-              className="h-24 w-24 object-contain sm:h-32 sm:w-32 md:h-40 md:w-40"
+              sizes="(max-width: 640px) 96px, (max-width: 768px) 128px, 160px"
+              className="h-20 w-20 object-contain sm:h-28 sm:w-28 md:h-40 md:w-40"
               data-testid="hero-logo"
             />
           </div>
-          <p className="mb-3 font-label text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-muted sm:mb-4 sm:text-xs sm:tracking-[0.2em]">
+          <p className="mb-3 font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-muted sm:mb-4 sm:text-xs sm:tracking-[0.2em]">
             cold outreach, without the spreadsheet headache
           </p>
-          <h1 className="font-display text-5xl font-bold leading-[0.95] tracking-tight text-ink sm:text-6xl md:text-8xl">
+          <h1 className="font-display text-[2.75rem] font-bold leading-[0.95] tracking-tight text-ink sm:text-6xl md:text-7xl lg:text-8xl">
             Outreach<span className="text-marker">OS</span>
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl font-display text-2xl font-semibold leading-snug text-ink sm:mt-6 sm:text-3xl md:text-4xl">
+          <p className="mx-auto mt-4 max-w-2xl px-1 font-display text-xl font-semibold leading-snug text-ink sm:mt-6 sm:text-3xl md:text-4xl">
             Your leads. Your vault.{' '}
             <span className="highlighter-wash px-1">Nobody else&apos;s mess.</span>
           </p>
-          <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-ink-muted sm:mt-5 sm:text-lg md:text-xl">
+          <p className="mx-auto mt-4 max-w-xl px-1 text-sm leading-relaxed text-ink-muted sm:mt-5 sm:text-lg md:text-xl">
             Stop hunting contacts across tabs and half-finished sheets. Drop them
             in, filter what matters today, and keep every account private — like
             a notebook that actually stays organized.
           </p>
 
-          <div className="mt-8 flex w-full flex-col items-stretch justify-center gap-3 sm:mt-10 sm:flex-row sm:flex-wrap sm:items-center">
+          <div className="mt-8 flex w-full flex-col items-stretch justify-center gap-3 sm:mt-10 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
             <Link
               href="/auth/signup"
-              className="doodle-btn inline-flex h-12 items-center justify-center rounded-md bg-coral px-8 font-label text-sm font-bold uppercase tracking-wider text-ink"
+              className="doodle-btn inline-flex min-h-12 items-center justify-center rounded-md bg-coral px-6 font-label text-sm font-bold uppercase tracking-wider text-ink sm:px-8"
             >
               Start free
             </Link>
             <Link
               href="/auth/login"
-              className="doodle-btn inline-flex h-12 items-center justify-center rounded-md bg-paper px-8 font-label text-sm font-bold uppercase tracking-wider text-ink"
+              className="doodle-btn inline-flex min-h-12 items-center justify-center rounded-md bg-paper px-6 font-label text-sm font-bold uppercase tracking-wider text-ink sm:px-8"
             >
               Sign in
             </Link>
@@ -118,7 +119,7 @@ export function LandingGate() {
               type="button"
               onClick={() => void handleDemo()}
               disabled={demoLoading}
-              className="doodle-btn inline-flex h-12 items-center justify-center gap-2 rounded-md bg-highlighter px-8 font-label text-sm font-bold uppercase tracking-wider text-ink disabled:opacity-60"
+              className="doodle-btn inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-highlighter px-6 font-label text-sm font-bold uppercase tracking-wider text-ink disabled:opacity-60 sm:px-8"
               data-testid="demo-signin-button"
             >
               <Sparkles className="h-4 w-4" aria-hidden />
@@ -231,10 +232,10 @@ export function LandingGate() {
           Make an account, import a sheet, and stop treating Maps links like a
           scavenger hunt.
         </p>
-        <div className="mt-8 flex w-full flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
+        <div className="mt-8 flex w-full max-w-md flex-col items-stretch justify-center gap-3 sm:mx-auto sm:max-w-none sm:flex-row sm:items-center">
           <Link
             href="/auth/signup"
-            className="doodle-btn inline-flex h-12 items-center justify-center rounded-md bg-coral px-8 font-label text-sm font-bold uppercase tracking-wider text-ink"
+            className="doodle-btn inline-flex min-h-12 items-center justify-center rounded-md bg-coral px-6 font-label text-sm font-bold uppercase tracking-wider text-ink sm:px-8"
           >
             Create your vault
           </Link>
@@ -242,7 +243,7 @@ export function LandingGate() {
             type="button"
             onClick={() => void handleDemo()}
             disabled={demoLoading}
-            className="doodle-btn inline-flex h-12 items-center justify-center rounded-md bg-paper px-8 font-label text-sm font-bold uppercase tracking-wider text-ink disabled:opacity-60"
+            className="doodle-btn inline-flex min-h-12 items-center justify-center rounded-md bg-paper px-6 font-label text-sm font-bold uppercase tracking-wider text-ink disabled:opacity-60 sm:px-8"
           >
             Try demo first
           </button>
