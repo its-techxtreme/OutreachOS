@@ -2,6 +2,8 @@ import { Role } from '@/lib/auth/rbac';
 import {
   FREE_MAX_IMPORT_ROWS,
   FREE_MAX_STORED_LEADS,
+  PREMIUM_MAX_IMPORT_ROWS_PER_FILE,
+  isUnlimitedLeadStorage,
   maxImportRowsForRoles,
   maxStoredLeadsForRoles,
 } from '@/lib/quotas';
@@ -16,6 +18,16 @@ describe('quotas', () => {
     expect(maxStoredLeadsForRoles([Role.ADMIN])).toBe(
       Number.POSITIVE_INFINITY
     );
+  });
+
+  it('gives premium unlimited storage and 3000 rows per file', () => {
+    expect(maxStoredLeadsForRoles([Role.PREMIUM])).toBe(
+      Number.POSITIVE_INFINITY
+    );
+    expect(maxImportRowsForRoles([Role.PREMIUM])).toBe(
+      PREMIUM_MAX_IMPORT_ROWS_PER_FILE
+    );
+    expect(isUnlimitedLeadStorage([Role.PREMIUM])).toBe(true);
   });
 
   it('caps demo imports at 50 rows', () => {

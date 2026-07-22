@@ -108,16 +108,40 @@ export class AuthService {
     return data;
   }
 
-  async signInWithGoogle() {
+  async signInWithGoogle(nextPath = '/dashboard') {
+    const safeNext =
+      nextPath.startsWith('/') && !nextPath.startsWith('//')
+        ? nextPath
+        : '/dashboard';
     const { data, error } = await this.supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${getAppUrl()}/auth/callback?next=/dashboard`,
+        redirectTo: `${getAppUrl()}/auth/callback?next=${encodeURIComponent(safeNext)}`,
       },
     });
 
     if (error) {
       logger.warn('Google OAuth start failed', { error: error.message });
+      throw error;
+    }
+
+    return data;
+  }
+
+  async linkGoogleIdentity(nextPath = '/settings') {
+    const safeNext =
+      nextPath.startsWith('/') && !nextPath.startsWith('//')
+        ? nextPath
+        : '/settings';
+    const { data, error } = await this.supabase.auth.linkIdentity({
+      provider: 'google',
+      options: {
+        redirectTo: `${getAppUrl()}/auth/callback?next=${encodeURIComponent(safeNext)}`,
+      },
+    });
+
+    if (error) {
+      logger.warn('Google identity link failed', { error: error.message });
       throw error;
     }
 

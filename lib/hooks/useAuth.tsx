@@ -25,7 +25,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   signIn: (identifier: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<{ needsEmailConfirmation: boolean }>;
-  signInWithGoogle: () => Promise<void>;
+  signInWithGoogle: (nextPath?: string) => Promise<void>;
+  linkGoogleIdentity: (nextPath?: string) => Promise<void>;
   signInAsDemo: () => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -202,22 +203,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [authService]
   );
 
-  const signInWithGoogle = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await authService.signInWithGoogle();
-      if (data.url) {
-        window.location.assign(data.url);
+  const signInWithGoogle = useCallback(
+    async (nextPath = '/dashboard') => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await authService.signInWithGoogle(nextPath);
+        if (data.url) {
+          window.location.assign(data.url);
+        }
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : 'Google sign-in failed';
+        setError(message);
+        setLoading(false);
+        throw err;
       }
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Google sign-in failed';
-      setError(message);
-      setLoading(false);
-      throw err;
-    }
-  }, [authService]);
+    },
+    [authService]
+  );
+
+  const linkGoogleIdentity = useCallback(
+    async (nextPath = '/settings') => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await authService.linkGoogleIdentity(nextPath);
+        if (data.url) {
+          window.location.assign(data.url);
+        }
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : 'Could not link Google';
+        setError(message);
+        setLoading(false);
+        throw err;
+      }
+    },
+    [authService]
+  );
 
   const signInAsDemo = useCallback(async () => {
     setLoading(true);
@@ -318,6 +342,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signIn,
       signUp,
       signInWithGoogle,
+      linkGoogleIdentity,
       signInAsDemo,
       signOut,
       resetPassword,
@@ -332,6 +357,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signIn,
       signUp,
       signInWithGoogle,
+      linkGoogleIdentity,
       signInAsDemo,
       signOut,
       resetPassword,

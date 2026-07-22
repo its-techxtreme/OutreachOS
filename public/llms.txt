@@ -1,0 +1,39 @@
+# OutreachOS
+
+> Personal lead vault for cold outreach — import Excel prospects, organize privately, dial with call scripts.
+
+## Site
+
+- Home: https://outreachos.techxtreme.me/
+- Pricing: https://outreachos.techxtreme.me/pricing
+- Import guide: https://outreachos.techxtreme.me/import-guide
+- Sign up: https://outreachos.techxtreme.me/auth/signup
+- Login: https://outreachos.techxtreme.me/auth/login
+- Demo: available from the home page (limited sample vault)
+
+## Product
+
+OutreachOS is a web app for individual operators who run outreach themselves.
+Each account owns a private lead pool (not a shared team CRM by default).
+
+Key capabilities:
+- Excel / CSV import with flexible column aliases
+- Filters by niche, country, and call status
+- Sticky call-script notes while dialing
+- Quest-style weekly dial challenges (optional)
+
+## Pricing
+
+- Free: up to 500 stored leads; 10 Excel imports per day; 200 rows per file
+- Premium: unlimited stored leads; 30 import files per hour; up to 3000 rows per hour
+  - ₹1499 INR / month
+  - $15 USD / month
+- How to buy: email techxtremebuisness@gmail.com from /pricing (Request Premium). The draft includes your OutreachOS username. Manual payment instructions by reply.
+
+## Operator
+
+Operated by Techxtreme. Support: techxtremebuisness@gmail.com
+
+## Optional full doc
+
+See /llms-full.txt for a longer machine-readable summary.

@@ -46,8 +46,12 @@ describe('Production security configuration', () => {
     expect(keys).toContain('X-Content-Type-Options');
 
     const redirects = await nextConfig.redirects!();
-    expect(redirects.some((r) => r.source === '/admin')).toBe(true);
+    const adminRedirect = redirects.find((r) => r.source === '/admin');
+    expect(adminRedirect?.destination).toBe('/admin/management-dashboard');
     expect(redirects.some((r) => r.source === '/login')).toBe(true);
+    expect(
+      redirects.some((r) => r.source === '/admin/:path*')
+    ).toBe(false);
   });
 
   it('rejects SQL-injection-like payloads at schema validation layer', async () => {

@@ -79,12 +79,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/admin',
-        destination: '/dashboard',
-        permanent: true,
-      },
-      {
-        source: '/admin/:path*',
-        destination: '/dashboard',
+        destination: '/admin/management-dashboard',
         permanent: false,
       },
       {

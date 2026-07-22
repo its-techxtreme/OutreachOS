@@ -102,6 +102,63 @@ export interface Database {
         };
         Relationships: [];
       };
+      subscriptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          provider: 'razorpay';
+          razorpay_customer_id: string | null;
+          razorpay_subscription_id: string | null;
+          plan_currency: 'INR' | 'USD';
+          status: string;
+          current_period_end: string | null;
+          manual_override: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          provider?: 'razorpay';
+          razorpay_customer_id?: string | null;
+          razorpay_subscription_id?: string | null;
+          plan_currency: 'INR' | 'USD';
+          status?: string;
+          current_period_end?: string | null;
+          manual_override?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          provider?: 'razorpay';
+          razorpay_customer_id?: string | null;
+          razorpay_subscription_id?: string | null;
+          plan_currency?: 'INR' | 'USD';
+          status?: string;
+          current_period_end?: string | null;
+          manual_override?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      billing_webhook_events: {
+        Row: {
+          id: string;
+          processed_at: string;
+        };
+        Insert: {
+          id: string;
+          processed_at?: string;
+        };
+        Update: {
+          id?: string;
+          processed_at?: string;
+        };
+        Relationships: [];
+      };
       call_scripts: {
         Row: {
           id: number;

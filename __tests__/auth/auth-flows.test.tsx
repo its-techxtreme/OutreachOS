@@ -51,6 +51,7 @@ const authState = {
   signIn: mockSignIn,
   signUp: jest.fn(),
   signInWithGoogle: jest.fn(),
+  linkGoogleIdentity: jest.fn(),
   signInAsDemo: jest.fn(),
   signOut: jest.fn(),
   resetPassword: mockResetPassword,

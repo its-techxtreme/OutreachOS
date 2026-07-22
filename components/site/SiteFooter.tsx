@@ -13,6 +13,7 @@ const FOOTER_LINKS = [
   { href: LEGAL_PATHS.terms, label: 'Terms' },
   { href: LEGAL_PATHS.acceptableUse, label: 'Acceptable Use' },
   { href: LEGAL_PATHS.cookies, label: 'Cookies' },
+  { href: '/pricing', label: 'Pricing' },
   { href: '/import-guide', label: 'Import guide' },
   { href: `mailto:${SUPPORT_EMAIL}`, label: 'Contact' },
 ] as const;

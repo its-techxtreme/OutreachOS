@@ -27,6 +27,7 @@ jest.mock('@/lib/hooks/useAuth', () => ({
   useAuth: () => ({
     signUp,
     signInWithGoogle,
+    linkGoogleIdentity: jest.fn(),
     error: null,
     clearError: jest.fn(),
   }),

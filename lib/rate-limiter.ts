@@ -153,6 +153,12 @@ export const rateLimiters = {
     maxRequests: 200,
     keyGenerator: (id) => `lead-import-admin:${id}`,
   }),
+  /** Premium — 30 files per hour. */
+  premiumLeadImport: new AdvancedRateLimiter({
+    windowMs: 60 * 60_000,
+    maxRequests: 30,
+    keyGenerator: (id) => `lead-import-premium:${id}`,
+  }),
   /** Public demo account — 1 upload per hour. */
   demoLeadImport: new AdvancedRateLimiter({
     windowMs: 60 * 60_000,
@@ -171,7 +177,56 @@ export const rateLimiters = {
     maxRequests: 120,
     keyGenerator: (id) => `dial-kit:${id}`,
   }),
+  /** Billing checkout creation. */
+  billingCheckout: new AdvancedRateLimiter({
+    windowMs: 60 * 60_000,
+    maxRequests: 20,
+    keyGenerator: (id) => `billing-checkout:${id}`,
+  }),
 };
+
+/** Rolling sum of imported rows within a time window (Premium hourly budget). */
+export class RollingSumLimiter {
+  private cache: LRUCache<string, { entries: { at: number; amount: number }[] }>;
+
+  constructor(
+    private windowMs: number,
+    private maxAmount: number
+  ) {
+    this.cache = new LRUCache({
+      max: 10_000,
+      ttl: windowMs * 2,
+    });
+  }
+
+  async consume(identifier: string, amount: number): Promise<RateLimitResult> {
+    const now = Date.now();
+    const existing = this.cache.get(identifier) ?? { entries: [] };
+    existing.entries = existing.entries.filter(
+      (entry) => now - entry.at < this.windowMs
+    );
+    const used = existing.entries.reduce((sum, entry) => sum + entry.amount, 0);
+
+    if (used + amount > this.maxAmount) {
+      throw new RateLimitError(Math.ceil(this.windowMs / 1000));
+    }
+
+    existing.entries.push({ at: now, amount });
+    this.cache.set(identifier, existing);
+
+    return {
+      success: true,
+      limit: this.maxAmount,
+      remaining: Math.max(0, this.maxAmount - used - amount),
+      resetTime: now + this.windowMs,
+    };
+  }
+}
+
+export const premiumImportRowBudget = new RollingSumLimiter(
+  60 * 60_000,
+  3_000
+);
 
 export function getImportRateLimiterForUser(roles: string[]): AdvancedRateLimiter {
   if (roles.includes('demo')) {
@@ -184,6 +239,10 @@ export function getImportRateLimiterForUser(roles: string[]): AdvancedRateLimite
     roles.includes('manager')
   ) {
     return rateLimiters.adminLeadImport;
+  }
+
+  if (roles.includes('premium')) {
+    return rateLimiters.premiumLeadImport;
   }
 
   return rateLimiters.leadImport;

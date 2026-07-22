@@ -1,0 +1,35 @@
+# OutreachOS — full summary
+
+OutreachOS (https://outreachos.techxtreme.me) is a personal lead management and outreach workspace with a sketchbook-style UI.
+
+## Who it is for
+
+Solo founders, SDRs, and operators who import lead lists from Excel, keep them private per account, and work a call/email queue without a heavyweight CRM.
+
+## Core flows
+
+1. Sign up (email+password with verification, or Google).
+2. Import Excel (.xlsx) with Business Name (required) plus niche, country, phone, address, Google Maps link.
+3. Filter and select leads; use sticky call scripts while dialing.
+4. Upgrade to Premium when the free 500-lead pool is full or import limits are hit.
+
+## Plans
+
+| Plan | Leads | Import files | Rows |
+|------|-------|--------------|------|
+| Free | 500 | 10 / day | 200 / file |
+| Premium | Unlimited | 30 / hour | 3000 / hour |
+
+Premium prices: ₹1499/month or $15/month (buyer chooses currency on /pricing).
+Request Premium from /pricing — opens email to techxtremebuisness@gmail.com with your username pre-filled.
+
+## Public URLs
+
+- https://outreachos.techxtreme.me/
+- https://outreachos.techxtreme.me/pricing
+- https://outreachos.techxtreme.me/import-guide
+- https://outreachos.techxtreme.me/privacy
+- https://outreachos.techxtreme.me/terms
+- https://outreachos.techxtreme.me/auth/signup
+
+Authenticated app shells (/dashboard, /settings, /admin) are private and should not be indexed.

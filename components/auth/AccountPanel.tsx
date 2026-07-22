@@ -31,6 +31,7 @@ function roleLabel(roles: Role[]): string {
   if (roles.includes(Role.SUPER_ADMIN)) return 'Super admin';
   if (roles.includes(Role.ADMIN)) return 'Admin';
   if (roles.includes(Role.MANAGER)) return 'Manager';
+  if (roles.includes(Role.PREMIUM)) return 'Premium';
   if (roles.includes(Role.DEMO)) return 'Demo';
   if (roles.includes(Role.USER)) return 'Member';
   if (roles.includes(Role.VIEWER)) return 'Viewer';
@@ -297,9 +298,12 @@ function ChangePasswordForm({ user }: { user: User }) {
 }
 
 export function AccountPanel({ user }: { user: User }) {
-  const { signOut, loading } = useAuth();
+  const { signOut, loading, linkGoogleIdentity } = useAuth();
   const roles = useMemo(() => RBACService.getUserRoles(user), [user]);
   const isDemo = RBACService.isDemoUser(user);
+  const isPremium = roles.includes(Role.PREMIUM);
+  const isAdmin =
+    roles.includes(Role.ADMIN) || roles.includes(Role.SUPER_ADMIN);
   const displayName = getUserDisplayName(user);
   const username =
     typeof user.user_metadata?.username === 'string'
@@ -310,9 +314,39 @@ export function AccountPanel({ user }: { user: User }) {
   const [questEnabled, setQuestEnabled] = useState(false);
   const [questBusy, setQuestBusy] = useState(false);
   const [questError, setQuestError] = useState<string | null>(null);
+  const [billingPlan, setBillingPlan] = useState<'free' | 'premium' | 'admin'>(
+    isAdmin ? 'admin' : isPremium ? 'premium' : 'free'
+  );
+  const hasGoogle = Boolean(
+    (Array.isArray(user.app_metadata?.providers) &&
+      user.app_metadata.providers.includes('google')) ||
+      user.app_metadata?.provider === 'google' ||
+      (Array.isArray(user.identities) &&
+        user.identities.some((identity) => identity.provider === 'google'))
+  );
 
   useEffect(() => {
     setMuted(isSoundMuted());
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const response = await fetch('/api/billing/status');
+        const payload = (await response.json()) as {
+          plan?: 'free' | 'premium' | 'admin';
+        };
+        if (!cancelled && response.ok && payload.plan) {
+          setBillingPlan(payload.plan);
+        }
+      } catch {
+        /* keep role-derived plan */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -425,6 +459,11 @@ export function AccountPanel({ user }: { user: User }) {
             <span className="inline-flex rounded-md border border-ink bg-paper-deep px-2 py-0.5 font-label text-[10px] font-bold uppercase tracking-wider text-ink">
               {roleLabel(roles)}
             </span>
+            {billingPlan === 'premium' || isPremium ? (
+              <span className="ml-2 inline-flex rounded-md border border-ink bg-highlighter px-2 py-0.5 font-label text-[10px] font-bold uppercase tracking-wider text-ink">
+                Premium
+              </span>
+            ) : null}
           </div>
         </div>
         {username ? (
@@ -433,6 +472,67 @@ export function AccountPanel({ user }: { user: User }) {
           </p>
         ) : null}
       </AccountSection>
+
+      {!isDemo ? (
+        <AccountSection
+          title="Billing"
+          description="Free vault or Premium unlimited leads — request upgrade by email for now."
+          testId="account-billing"
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-medium text-ink">
+                Plan:{' '}
+                {billingPlan === 'admin'
+                  ? 'Admin (full access)'
+                  : billingPlan === 'premium'
+                    ? 'Premium'
+                    : 'Free'}
+              </p>
+              <p className="text-sm text-ink-muted">
+                Premium is ₹1499 or $15 / month. Request upgrade from Pricing —
+                your email draft includes your username.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {billingPlan === 'free' ? (
+                <Button asChild className="doodle-btn bg-coral text-ink">
+                  <Link href="/pricing">Request Premium</Link>
+                </Button>
+              ) : null}
+              <Button asChild variant="outline" className="doodle-btn">
+                <Link href="/pricing">View pricing</Link>
+              </Button>
+            </div>
+          </div>
+        </AccountSection>
+      ) : null}
+
+      {!isDemo ? (
+        <AccountSection
+          title="Linked sign-in"
+          description="Link Google to use the admin management console with the same account."
+          testId="account-linked-auth"
+        >
+          {hasGoogle ? (
+            <p className="text-sm text-ink-muted">
+              Google is linked to this account.
+            </p>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              className="doodle-btn"
+              onClick={() => {
+                playSound('tap');
+                void linkGoogleIdentity('/settings');
+              }}
+            >
+              Link Google
+            </Button>
+          )}
+        </AccountSection>
+      ) : null}
 
       <AccountSection
         title="Security"

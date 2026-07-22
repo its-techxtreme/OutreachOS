@@ -13,6 +13,7 @@ function makeLead(
     address: null,
     maps_url: `https://maps.google.com/${partial.id}`,
     status: 'New',
+    owner_id: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     ...partial,

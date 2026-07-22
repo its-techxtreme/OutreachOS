@@ -90,6 +90,9 @@ describe('rateLimiters presets', () => {
     expect(getImportRateLimiterForUser(['admin'])).toBe(
       rateLimiters.adminLeadImport
     );
+    expect(getImportRateLimiterForUser(['premium'])).toBe(
+      rateLimiters.premiumLeadImport
+    );
     expect(getImportRateLimiterForUser(['viewer'])).toBe(
       rateLimiters.leadImport
     );

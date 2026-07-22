@@ -43,9 +43,22 @@ describe('AccountPanel', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ enabled: false, quests: [], weekStart: '2026-07-13' }),
+    global.fetch = jest.fn().mockImplementation((input: RequestInfo) => {
+      const url = String(input);
+      if (url.includes('/api/billing/status')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ plan: 'free', billingConfigured: false }),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({
+          enabled: false,
+          quests: [],
+          weekStart: '2026-07-13',
+        }),
+      });
     }) as jest.Mock;
     mockUseAuth.mockReturnValue({
       user: null,
@@ -56,6 +69,7 @@ describe('AccountPanel', () => {
       signIn: jest.fn(),
       signUp: jest.fn(),
       signInWithGoogle: jest.fn(),
+      linkGoogleIdentity: jest.fn(),
       signInAsDemo: jest.fn(),
       signOut,
       resetPassword: jest.fn(),

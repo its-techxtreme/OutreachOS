@@ -84,6 +84,8 @@ Call pitch pad that stays open while you dial. Placeholders like `{business}` / 
 - Vector vault graph
 - Email / password signup, Google sign-in, one-click demo
 - Per-user lead pools (your stuff stays yours)
+- Free vs **Premium** (`/pricing`) — ₹1499 or $15 / month; request via email to `techxtremebuisness@gmail.com` (username included automatically)
+- Organic SEO: `/sitemap.xml`, `/robots.txt`, `/llms.txt`
 
 Agent intake is still there for ChatGPT → `POST /api/agent/leads` with `X-Agent-Secret`.
 
@@ -91,7 +93,7 @@ Agent intake is still there for ChatGPT → `POST /api/agent/leads` with `X-Agen
 
 ## Stack
 
-Next.js · Supabase (Auth + Postgres) · Tailwind · Vercel
+Next.js · Supabase (Auth + Postgres) · Tailwind · Vercel · Razorpay (Premium)
 
 ```text
 Excel / ChatGPT agent  →  Next.js API  →  Supabase
@@ -118,10 +120,11 @@ Fill `.env.local` (see `.env.example`). Important ones:
 - `SUPABASE_SERVICE_ROLE_KEY` (server only)
 - `AGENT_SECRET`
 - `ENCRYPTION_KEY` (64 hex chars — MFA secrets at rest)
-- `ADMIN_*` and optional `DEMO_USER_*`
-- `NEXT_PUBLIC_APP_URL` / `NEXT_PUBLIC_SITE_URL`
+- `ADMIN_*` / `ADMIN_GOOGLE_EMAIL` and optional `DEMO_USER_*`
+- `NEXT_PUBLIC_APP_URL` / `NEXT_PUBLIC_SITE_URL` (canonical: `https://outreachos.techxtreme.me`)
+- Razorpay (optional until billing goes live): `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, `RAZORPAY_PLAN_ID_INR`, `RAZORPAY_PLAN_ID_USD`
 
-Run migrations in `supabase/migrations/` in order, then:
+Run migrations in `supabase/migrations/` in order (include `009_subscriptions.sql`), then:
 
 ```bash
 npm run ensure:accounts
@@ -131,8 +134,19 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-Supabase Auth redirect URLs should include `/auth/callback`, `/auth/login`, `/auth/reset-password`, and `/auth/username`.
+Supabase Auth:
 
+- Redirect URLs: `/auth/callback`, `/auth/login`, `/auth/reset-password`, `/auth/username`
+- Enable **Automatic Linking** (verified emails) so Google + email/password stay one user
+- If you already have a duplicate Google-only admin user, dry-run then merge:
+
+```bash
+node --env-file=.env.local scripts/merge-auth-identities.mjs --dry-run
+node --env-file=.env.local scripts/merge-auth-identities.mjs --email=you@example.com
+```
+
+Admin management (Google + allowlisted email only): `/admin/management-dashboard`  
+Webhook for Premium: `https://your-domain/api/billing/webhook`
 ---
 
 ## Scripts

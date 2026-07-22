@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Dashboard | OutreachOS',
-  description: 'Lead management and outreach dashboard',
+  robots: { index: false, follow: false },
 };
 
 export default function DashboardLayout({

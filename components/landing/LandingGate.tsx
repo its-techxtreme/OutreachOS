@@ -47,8 +47,14 @@ export function LandingGate() {
         <BrandLockup size="md" href="/" />
         <div className="flex shrink-0 items-center gap-3 sm:gap-4">
           <Link
-            href="/auth/signup"
+            href="/pricing"
             className="hidden font-label text-sm font-semibold uppercase tracking-wide text-ink-muted underline decoration-2 underline-offset-4 hover:text-ink sm:inline"
+          >
+            Pricing
+          </Link>
+          <Link
+            href="/auth/signup"
+            className="hidden font-label text-sm font-semibold uppercase tracking-wide text-ink-muted underline decoration-2 underline-offset-4 hover:text-ink md:inline"
           >
             Get started
           </Link>
@@ -198,6 +204,16 @@ export function LandingGate() {
               </li>
             ))}
           </ul>
+          <p className="mt-6 text-sm text-ink-muted">
+            Need unlimited leads?{' '}
+            <Link
+              href="/pricing"
+              className="font-semibold text-ink underline decoration-2 underline-offset-4"
+            >
+              See Premium pricing
+            </Link>{' '}
+            (₹1499 or $15 / month).
+          </p>
         </div>
         <div className="mt-8 sm:mt-10">
           <MascotCallout mascot="citygirl" title="Start empty. That’s the point.">

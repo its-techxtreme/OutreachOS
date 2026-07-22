@@ -1,17 +1,23 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
 const PROTECTED_PATHS = ['/admin', '/dashboard', '/settings'];
+const PUBLIC_ADMIN_PATHS = ['/admin/login'];
 const SESSION_REQUIRED_API_PREFIXES = [
   '/api/leads',
   '/api/admin',
   '/api/scripts',
   '/api/quests',
+  '/api/billing/checkout',
+  '/api/billing/portal',
+  '/api/billing/status',
+  '/api/account',
 ];
 const PUBLIC_API_PREFIXES = [
   '/api/agent',
   '/api/health',
   '/api/metrics',
   '/api/auth',
+  '/api/billing/webhook',
 ];
 
 function applySecurityHeaders(
@@ -57,9 +63,12 @@ export default async function proxy(request: NextRequest) {
     const response = applySecurityHeaders(supabaseResponse, requestId);
     const ip = getClientIp(request);
 
-    const isProtectedPage = PROTECTED_PATHS.some((path) =>
-      pathname.startsWith(path)
+    const isPublicAdminPath = PUBLIC_ADMIN_PATHS.some(
+      (path) => pathname === path || pathname.startsWith(`${path}/`)
     );
+    const isProtectedPage =
+      !isPublicAdminPath &&
+      PROTECTED_PATHS.some((path) => pathname.startsWith(path));
 
     if (isProtectedPage && !user) {
       console.warn(
@@ -72,8 +81,15 @@ export default async function proxy(request: NextRequest) {
         })
       );
 
-      const loginUrl = new URL('/auth/login', request.url);
-      loginUrl.searchParams.set('redirect', pathname);
+      const loginUrl = new URL(
+        pathname.startsWith('/admin') ? '/admin/login' : '/auth/login',
+        request.url
+      );
+      if (!pathname.startsWith('/admin')) {
+        loginUrl.searchParams.set('redirect', pathname);
+      } else {
+        loginUrl.searchParams.set('next', '/admin/management-dashboard');
+      }
       return applySecurityHeaders(
         NextResponse.redirect(loginUrl),
         requestId

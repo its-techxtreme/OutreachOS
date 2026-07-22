@@ -335,3 +335,11 @@ git push --all origin
 - **Vercel Hobby Tier:** Optimized for small to medium applications
 - **Supabase Free Tier:** Suitable for development and small production loads
 - **Monitoring:** Track usage to optimize resource allocation
+
+## Premium requests (email)
+
+`/pricing` ? **Request Premium** opens the user?s mail app to **`techxtremebuisness@gmail.com`** with their OutreachOS **username**, email, user id, and preferred currency pre-filled.
+
+After they pay (UPI / transfer), grant access from `/admin/management-dashboard` ? **Grant Premium**.
+
+Domain email forwarding (`premium@techxtreme.me`) is optional later ? not required while using Gmail directly.

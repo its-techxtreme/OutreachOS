@@ -21,11 +21,13 @@ import { importValidatedLeads } from '@/lib/import/import-leads';
 import { logger } from '@/lib/logger';
 import {
   getImportRateLimiterForUser,
+  premiumImportRowBudget,
 } from '@/lib/rate-limiter';
 import { SecurityEventType, SecurityLogger } from '@/lib/security-logger';
 import { ensureDefaultUserRole } from '@/lib/auth/ensure-role';
 import { countLeadsForOwner } from '@/lib/leads';
 import {
+  isPremiumRole,
   isUnlimitedLeadStorage,
   maxImportRowsForRoles,
   maxStoredLeadsForRoles,
@@ -90,8 +92,9 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
 
+    const roles = RBACService.getUserRoles(user);
+
     try {
-      const roles = RBACService.getUserRoles(user);
       const importLimiter = getImportRateLimiterForUser(roles);
       await importLimiter.check(user.id);
     } catch (error) {
@@ -106,7 +109,9 @@ export async function POST(request: Request): Promise<NextResponse> {
             {
               error: RBACService.isDemoUser(user)
                 ? 'Demo accounts are limited to 1 Excel upload per hour.'
-                : 'Too many import requests. Try again later.',
+                : isPremiumRole(roles)
+                  ? 'Premium accounts can import up to 30 files per hour. Try again later.'
+                  : 'Too many import requests. Try again later, or upgrade on /pricing.',
               retryAfter: error.retryAfter,
               requestId,
             },
@@ -218,7 +223,6 @@ export async function POST(request: Request): Promise<NextResponse> {
       throw error;
     }
 
-    const roles = RBACService.getUserRoles(user);
     const rowCap = maxImportRowsForRoles(roles);
     if (rows.length > rowCap) {
       return withApiHeaders(
@@ -234,6 +238,34 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
 
+    if (isPremiumRole(roles)) {
+      try {
+        await premiumImportRowBudget.consume(user.id, rows.length);
+      } catch (error) {
+        if (error instanceof RateLimitError) {
+          return withApiHeaders(
+            NextResponse.json(
+              {
+                error:
+                  'Premium accounts can import up to 3000 rows per hour. Try again later.',
+                code: 'row_budget_exceeded',
+                retryAfter: error.retryAfter,
+                requestId,
+              },
+              {
+                status: 429,
+                headers: error.retryAfter
+                  ? { 'Retry-After': String(error.retryAfter) }
+                  : undefined,
+              }
+            ),
+            requestId
+          );
+        }
+        throw error;
+      }
+    }
+
     if (!RBACService.isDemoUser(user) && !isUnlimitedLeadStorage(roles)) {
       const currentCount = await countLeadsForOwner(user.id);
       const maxStored = maxStoredLeadsForRoles(roles);
@@ -241,7 +273,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         return withApiHeaders(
           NextResponse.json(
             {
-              error: `Lead limit reached (${maxStored}). Delete leads or upgrade before importing.`,
+              error: `Lead limit reached (${maxStored}). Delete leads or upgrade on /pricing.`,
               code: 'lead_quota_exceeded',
               requestId,
             },

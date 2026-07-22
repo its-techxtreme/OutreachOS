@@ -19,6 +19,8 @@ export enum Role {
   SUPER_ADMIN = 'super_admin',
   ADMIN = 'admin',
   MANAGER = 'manager',
+  /** Paid subscriber — personal CRM with raised quotas. */
+  PREMIUM = 'premium',
   /** Standard public signup — personal CRM only. */
   USER = 'user',
   VIEWER = 'viewer',
@@ -49,6 +51,13 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     Permission.LEADS_EXPORT,
     Permission.USERS_VIEW,
   ],
+  [Role.PREMIUM]: [
+    Permission.LEADS_VIEW,
+    Permission.LEADS_CREATE,
+    Permission.LEADS_UPDATE,
+    Permission.LEADS_DELETE,
+    Permission.LEADS_EXPORT,
+  ],
   [Role.USER]: [
     Permission.LEADS_VIEW,
     Permission.LEADS_CREATE,
@@ -66,6 +75,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
 
 const ROUTE_PERMISSIONS: Record<string, Permission[]> = {
   '/dashboard': [Permission.LEADS_VIEW],
+  '/admin/management-dashboard': [Permission.USERS_VIEW],
   '/admin/leads': [Permission.LEADS_VIEW],
   '/admin/leads/create': [Permission.LEADS_CREATE],
   '/admin/leads/edit': [Permission.LEADS_UPDATE],

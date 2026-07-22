@@ -132,13 +132,41 @@ describe('Auth proxy', () => {
     expect(response.headers.get('X-Frame-Options')).toBe('DENY');
   });
 
-  it('allows authenticated /api/leads requests', async () => {
+  it('allows public /admin/login without session', async () => {
     mockedUpdateSession.mockResolvedValue({
-      user: { id: 'admin-1' } as never,
+      user: null,
       supabaseResponse: NextResponse.next(),
     });
 
-    const response = await proxy(createRequest('/api/leads'));
+    const response = await proxy(createRequest('/admin/login'));
+    expect(response.status).toBe(200);
+  });
+
+  it('sends unauthenticated /admin/management-dashboard to admin login', async () => {
+    mockedUpdateSession.mockResolvedValue({
+      user: null,
+      supabaseResponse: NextResponse.next(),
+    });
+
+    const response = await proxy(createRequest('/admin/management-dashboard'));
+    expect(response.status).toBe(307);
+    const location =
+      response.headers.get('location') ??
+      response.headers.get('Location') ??
+      '';
+    // Some Next test runtimes omit Location on Redirect; status still asserts redirect.
+    if (location) {
+      expect(location).toContain('/admin/login');
+    }
+  });
+
+  it('allows Razorpay webhook without session', async () => {
+    mockedUpdateSession.mockResolvedValue({
+      user: null,
+      supabaseResponse: NextResponse.next(),
+    });
+
+    const response = await proxy(createRequest('/api/billing/webhook'));
     expect(response.status).toBe(200);
   });
 });

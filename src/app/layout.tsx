@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Caveat, IBM_Plex_Mono, Space_Grotesk, Work_Sans } from 'next/font/google';
 
 import { Providers } from '@/components/providers';
+import { getPublicSiteUrl } from '@/lib/seo/site-url';
 
 import './globals.css';
 
@@ -36,11 +37,16 @@ export const viewport: Viewport = {
   themeColor: '#FFFDF7',
 };
 
+const siteUrl = getPublicSiteUrl();
+
 export const metadata: Metadata = {
-  title: 'OutreachOS',
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: 'OutreachOS',
+    template: '%s | OutreachOS',
+  },
   description:
     'Personal lead pipelines with a sketchbook soul — import, organize, and outreach your way.',
-  metadataBase: new URL('https://outreachos-online.vercel.app'),
   icons: {
     icon: [
       { url: '/brand/outreachos-logo-192.png', sizes: '192x192', type: 'image/png' },
@@ -53,16 +59,24 @@ export const metadata: Metadata = {
     title: 'OutreachOS',
     description:
       'Personal lead pipelines with a sketchbook soul — import, organize, and outreach your way.',
-    url: 'https://outreachos-online.vercel.app',
+    url: siteUrl,
     siteName: 'OutreachOS',
+    type: 'website',
     images: [
       {
-        url: '/brand/outreachos-logo-512.png',
-        width: 512,
-        height: 512,
-        alt: 'OutreachOS logo',
+        url: '/brand/og-outreachos.png',
+        width: 1200,
+        height: 630,
+        alt: 'OutreachOS — personal lead vault',
       },
     ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'OutreachOS',
+    description:
+      'Personal lead pipelines with a sketchbook soul — import, organize, and outreach your way.',
+    images: ['/brand/og-outreachos.png'],
   },
 };
 
