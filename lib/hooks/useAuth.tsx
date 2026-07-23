@@ -134,11 +134,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         const body = (await response.json()) as {
           error?: string;
+          code?: string;
+          reason?: string | null;
           redirectTo?: string;
           accessToken?: string;
           refreshToken?: string;
         };
         if (!response.ok) {
+          if (
+            response.status === 403 &&
+            body.code === 'ACCOUNT_DISABLED' &&
+            body.redirectTo
+          ) {
+            window.location.assign(body.redirectTo);
+            return;
+          }
           throw new Error(body.error ?? 'Invalid credentials');
         }
 
@@ -250,11 +260,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await fetch('/api/auth/demo', { method: 'POST' });
       const body = (await response.json()) as {
         error?: string;
+        code?: string;
+        reason?: string | null;
         redirectTo?: string;
         accessToken?: string;
         refreshToken?: string;
       };
       if (!response.ok) {
+        if (
+          response.status === 403 &&
+          body.code === 'ACCOUNT_DISABLED' &&
+          body.redirectTo
+        ) {
+          window.location.assign(body.redirectTo);
+          return;
+        }
         throw new Error(body.error ?? 'Demo sign-in failed');
       }
 

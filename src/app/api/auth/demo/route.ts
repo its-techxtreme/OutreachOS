@@ -72,6 +72,26 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
 
+    const { getAccountDisableState, disabledAccountPath, ACCOUNT_DISABLED_CODE } =
+      await import('@/lib/auth/account-status');
+    const disable = getAccountDisableState(data.user);
+    if (disable.disabled) {
+      await supabase.auth.signOut();
+      return withApiHeaders(
+        NextResponse.json(
+          {
+            error: 'This account has been disabled',
+            code: ACCOUNT_DISABLED_CODE,
+            reason: disable.reason,
+            redirectTo: disabledAccountPath(disable.reason),
+            requestId,
+          },
+          { status: 403 }
+        ),
+        requestId
+      );
+    }
+
     SecurityLogger.log(
       SecurityEventType.AUTH_SUCCESS,
       { requestId, path: '/api/auth/demo', userId: data.user?.id, ip },

@@ -7,7 +7,10 @@ import { useRouter } from 'next/navigation';
 import { BrandLockup } from '@/components/brand/BrandLockup';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { Button } from '@/components/ui/button';
-import { buildPremiumRequestMailto } from '@/lib/billing/premium-request';
+import {
+  buildPremiumRequestDraft,
+  type PremiumRequestDraft,
+} from '@/lib/billing/premium-request';
 import { PREMIUM_REQUEST_EMAIL } from '@/lib/brand';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { playSound } from '@/lib/sound';
@@ -21,6 +24,11 @@ export function PricingClient() {
   const [currency, setCurrency] = useState<Currency>('INR');
   const [message, setMessage] = useState<string | null>(null);
   const [plan, setPlan] = useState<'free' | 'premium' | 'admin'>('free');
+  const [draft, setDraft] = useState<PremiumRequestDraft | null>(null);
+  const [manualOpen, setManualOpen] = useState(false);
+  const [copied, setCopied] = useState<'all' | 'to' | 'subject' | 'body' | null>(
+    null
+  );
 
   useEffect(() => {
     const locale = typeof navigator !== 'undefined' ? navigator.language : 'en';
@@ -43,12 +51,29 @@ export function PricingClient() {
     })();
   }, [user]);
 
-  const requestPremium = useCallback(() => {
+  useEffect(() => {
+    if (!manualOpen || !user?.email) return;
+    const username =
+      typeof user.user_metadata?.username === 'string'
+        ? user.user_metadata.username.trim()
+        : '';
+    if (!username) return;
+    setDraft(
+      buildPremiumRequestDraft({
+        currency,
+        userEmail: user.email,
+        userId: user.id,
+        username,
+      })
+    );
+  }, [currency, manualOpen, user]);
+
+  const ensureDraft = useCallback((): PremiumRequestDraft | null => {
     setMessage(null);
-    if (loading) return;
+    if (loading) return null;
     if (!user) {
       router.push('/auth/login?next=/pricing');
-      return;
+      return null;
     }
 
     const username =
@@ -59,27 +84,68 @@ export function PricingClient() {
     if (!username) {
       setMessage('Pick a username first so we can match your Premium request.');
       router.push('/auth/username?next=/pricing');
-      return;
+      return null;
     }
 
     if (!user.email) {
       setMessage('Your account needs an email before requesting Premium.');
-      return;
+      return null;
     }
 
-    const href = buildPremiumRequestMailto({
+    const next = buildPremiumRequestDraft({
       currency,
       userEmail: user.email,
       userId: user.id,
       username,
     });
+    setDraft(next);
+    return next;
+  }, [currency, loading, router, user]);
+
+  const requestPremium = useCallback(() => {
+    const next = ensureDraft();
+    if (!next) return;
 
     playSound('tap');
-    window.location.href = href;
+    window.location.href = next.mailto;
+    setManualOpen(false);
     setMessage(
-      `Opening your email app with @${username} included. If nothing opens, write to ${PREMIUM_REQUEST_EMAIL}.`
+      'Tried to open your mail app with your username included. If nothing opens, use “Mail app not opening?” below.'
     );
-  }, [currency, loading, router, user]);
+  }, [ensureDraft]);
+
+  const openManualDraft = useCallback(() => {
+    const next = ensureDraft();
+    if (!next) return;
+    playSound('tap');
+    setManualOpen(true);
+    setCopied(null);
+    setMessage(null);
+  }, [ensureDraft]);
+
+  const copyField = useCallback(
+    async (field: 'all' | 'to' | 'subject' | 'body') => {
+      if (!draft) return;
+      const text =
+        field === 'all'
+          ? draft.copyText
+          : field === 'to'
+            ? draft.to
+            : field === 'subject'
+              ? draft.subject
+              : draft.body;
+
+      try {
+        await navigator.clipboard.writeText(text);
+        playSound('tap');
+        setCopied(field);
+        window.setTimeout(() => setCopied(null), 2000);
+      } catch {
+        setMessage('Could not copy — select the text below and copy it yourself.');
+      }
+    },
+    [draft]
+  );
 
   return (
     <div className="paper-texture min-h-screen min-h-[100dvh]">
@@ -157,13 +223,22 @@ export function PricingClient() {
             ) : plan === 'premium' ? (
               <p className="mt-auto pt-6 text-sm font-semibold">You are on Premium.</p>
             ) : (
-              <Button
-                type="button"
-                onClick={() => requestPremium()}
-                className="doodle-btn mt-auto w-full border-ink bg-coral pt-0 text-ink"
-              >
-                Request Premium · email us
-              </Button>
+              <div className="mt-auto flex flex-col gap-2 pt-6">
+                <Button
+                  type="button"
+                  onClick={() => requestPremium()}
+                  className="doodle-btn w-full border-ink bg-coral text-ink"
+                >
+                  Request Premium · email us
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => openManualDraft()}
+                  className="text-left text-sm text-ink underline underline-offset-2 hover:text-ink/80"
+                >
+                  Mail app not opening? Manually send this email
+                </button>
+              </div>
             )}
           </section>
         </div>
@@ -174,14 +249,104 @@ export function PricingClient() {
           </p>
         )}
 
+        {manualOpen && draft && (
+          <section
+            className="doodle-border bg-paper p-4 sm:p-5"
+            aria-label="Manual Premium request email"
+          >
+            <h2 className="font-display text-xl font-bold text-ink">
+              Send this email manually
+            </h2>
+            <p className="mt-1 text-sm text-ink-muted">
+              Copy the draft into Gmail, Outlook, or any webmail, then send it to
+              us. Include the username lines so we can match your account.
+            </p>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Button
+                type="button"
+                onClick={() => void copyField('all')}
+                className="doodle-btn border-ink bg-coral text-ink"
+              >
+                {copied === 'all' ? 'Copied draft' : 'Copy full draft'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setManualOpen(false)}
+                className="doodle-btn"
+              >
+                Close
+              </Button>
+            </div>
+
+            <dl className="mt-4 space-y-3 text-sm">
+              <div>
+                <div className="flex items-center justify-between gap-2">
+                  <dt className="font-label text-xs uppercase tracking-wide text-ink-muted">
+                    To
+                  </dt>
+                  <button
+                    type="button"
+                    className="text-xs underline"
+                    onClick={() => void copyField('to')}
+                  >
+                    {copied === 'to' ? 'Copied' : 'Copy'}
+                  </button>
+                </div>
+                <dd className="mt-1 break-all font-medium text-ink">{draft.to}</dd>
+              </div>
+              <div>
+                <div className="flex items-center justify-between gap-2">
+                  <dt className="font-label text-xs uppercase tracking-wide text-ink-muted">
+                    Subject
+                  </dt>
+                  <button
+                    type="button"
+                    className="text-xs underline"
+                    onClick={() => void copyField('subject')}
+                  >
+                    {copied === 'subject' ? 'Copied' : 'Copy'}
+                  </button>
+                </div>
+                <dd className="mt-1 text-ink">{draft.subject}</dd>
+              </div>
+              <div>
+                <div className="flex items-center justify-between gap-2">
+                  <dt className="font-label text-xs uppercase tracking-wide text-ink-muted">
+                    Body
+                  </dt>
+                  <button
+                    type="button"
+                    className="text-xs underline"
+                    onClick={() => void copyField('body')}
+                  >
+                    {copied === 'body' ? 'Copied' : 'Copy'}
+                  </button>
+                </div>
+                <dd className="mt-1 whitespace-pre-wrap rounded border-2 border-ink/20 bg-paper-dark/30 p-3 font-mono text-xs leading-relaxed text-ink sm:text-sm">
+                  {draft.body}
+                </dd>
+              </div>
+            </dl>
+          </section>
+        )}
+
         <p className="text-sm leading-relaxed text-ink-muted">
           Tap <strong>Request Premium</strong> while signed in — your mail app
           opens a message to{' '}
           <a className="break-all underline" href={`mailto:${PREMIUM_REQUEST_EMAIL}`}>
             {PREMIUM_REQUEST_EMAIL}
           </a>{' '}
-          with your <strong>username</strong> filled in. We reply with UPI /
-          transfer instructions. See{' '}
+          with your <strong>username</strong> filled in. No mail app? Use{' '}
+          <button
+            type="button"
+            className="underline"
+            onClick={() => openManualDraft()}
+          >
+            Manually send this email
+          </button>
+          . We reply with UPI / transfer instructions. See{' '}
           <Link href="/terms" className="underline">
             Terms
           </Link>{' '}

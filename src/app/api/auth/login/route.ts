@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { getClientIp, withApiHeaders } from '@/lib/api-helpers';
+import {
+  ACCOUNT_DISABLED_CODE,
+  disabledAccountPath,
+  getAccountDisableState,
+} from '@/lib/auth/account-status';
 import { logger } from '@/lib/logger';
 import { sanitizeInput } from '@/lib/sanitize';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
@@ -86,6 +91,24 @@ export async function POST(request: Request) {
         NextResponse.json(
           { error: 'Invalid credentials', requestId },
           { status: 401 }
+        ),
+        requestId
+      );
+    }
+
+    const disable = getAccountDisableState(data.user);
+    if (disable.disabled) {
+      await supabase.auth.signOut();
+      return withApiHeaders(
+        NextResponse.json(
+          {
+            error: 'This account has been disabled',
+            code: ACCOUNT_DISABLED_CODE,
+            reason: disable.reason,
+            redirectTo: disabledAccountPath(disable.reason),
+            requestId,
+          },
+          { status: 403 }
         ),
         requestId
       );

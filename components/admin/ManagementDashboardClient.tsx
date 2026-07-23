@@ -16,6 +16,9 @@ type ManagedUser = {
   leadCount: number;
   plan: string;
   providers: string[];
+  disabled: boolean;
+  disabledReason: string | null;
+  disabledAt: string | null;
   subscription: {
     status: string;
     currency: string;
@@ -30,6 +33,8 @@ export function ManagementDashboardClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [disableTarget, setDisableTarget] = useState<ManagedUser | null>(null);
+  const [disableReason, setDisableReason] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -57,7 +62,7 @@ export function ManagementDashboardClient() {
 
   const patchUser = async (
     id: string,
-    body: Record<string, boolean>
+    body: Record<string, unknown>
   ): Promise<void> => {
     setBusyId(id);
     try {
@@ -78,23 +83,19 @@ export function ManagementDashboardClient() {
     }
   };
 
-  const cancelSub = async (id: string): Promise<void> => {
-    setBusyId(id);
-    try {
-      const res = await fetch(
-        `/api/admin/management/users/${id}/cancel-subscription`,
-        { method: 'POST' }
-      );
-      const data = (await res.json()) as { error?: string };
-      if (!res.ok) throw new Error(data.error ?? 'Cancel failed');
-      playSound('whoosh');
-      await load();
-    } catch (err) {
-      playSound('soft');
-      setError(err instanceof Error ? err.message : 'Cancel failed');
-    } finally {
-      setBusyId(null);
+  const confirmDisable = async (): Promise<void> => {
+    if (!disableTarget) return;
+    const reason = disableReason.trim();
+    if (reason.length < 3) {
+      setError('Enter a disable reason (at least 3 characters).');
+      return;
     }
+    await patchUser(disableTarget.id, {
+      disableAccount: true,
+      disableReason: reason,
+    });
+    setDisableTarget(null);
+    setDisableReason('');
   };
 
   return (
@@ -107,7 +108,7 @@ export function ManagementDashboardClient() {
               Management dashboard
             </h1>
             <p className="mt-1 text-sm text-ink-muted">
-              Users, roles, and Razorpay subscription status.
+              Users, roles, Premium grants, and account disable / enable.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -141,7 +142,7 @@ export function ManagementDashboardClient() {
                   <th className="px-3 py-2">User</th>
                   <th className="px-3 py-2">Plan</th>
                   <th className="px-3 py-2">Leads</th>
-                  <th className="px-3 py-2">Subscription</th>
+                  <th className="px-3 py-2">Status</th>
                   <th className="px-3 py-2">Actions</th>
                 </tr>
               </thead>
@@ -161,23 +162,17 @@ export function ManagementDashboardClient() {
                     <td className="px-3 py-3 align-top capitalize">{user.plan}</td>
                     <td className="px-3 py-3 align-top">{user.leadCount}</td>
                     <td className="px-3 py-3 align-top">
-                      {user.subscription ? (
+                      {user.disabled ? (
                         <div className="text-xs">
-                          <p>{user.subscription.status}</p>
-                          <p className="text-ink-muted">
-                            {user.subscription.currency}
-                            {user.subscription.manualOverride
-                              ? ' · manual'
-                              : ''}
-                          </p>
-                          {user.subscription.subscriptionId ? (
-                            <p className="font-mono text-[10px]">
-                              {user.subscription.subscriptionId}
+                          <p className="font-semibold text-danger">Disabled</p>
+                          {user.disabledReason ? (
+                            <p className="mt-1 max-w-[14rem] text-ink-muted">
+                              {user.disabledReason}
                             </p>
                           ) : null}
                         </div>
                       ) : (
-                        <span className="text-ink-muted">—</span>
+                        <span className="text-ink-muted">Active</span>
                       )}
                     </td>
                     <td className="px-3 py-3 align-top">
@@ -218,16 +213,35 @@ export function ManagementDashboardClient() {
                         >
                           Refresh roles
                         </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          disabled={busyId === user.id}
-                          className="doodle-btn h-8 text-xs"
-                          onClick={() => void cancelSub(user.id)}
-                        >
-                          Cancel Razorpay
-                        </Button>
+                        {user.disabled ? (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            disabled={busyId === user.id}
+                            className="doodle-btn h-8 text-xs"
+                            onClick={() =>
+                              void patchUser(user.id, { enableAccount: true })
+                            }
+                          >
+                            Enable acc
+                          </Button>
+                        ) : (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            disabled={busyId === user.id}
+                            className="doodle-btn h-8 text-xs text-danger"
+                            onClick={() => {
+                              setError(null);
+                              setDisableReason('');
+                              setDisableTarget(user);
+                            }}
+                          >
+                            Disable acc
+                          </Button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -237,6 +251,66 @@ export function ManagementDashboardClient() {
           </div>
         )}
       </main>
+
+      {disableTarget ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="disable-acc-title"
+        >
+          <div className="doodle-border w-full max-w-md bg-paper p-5 shadow-lg">
+            <h2
+              id="disable-acc-title"
+              className="font-display text-xl font-bold"
+            >
+              Disable account
+            </h2>
+            <p className="mt-2 text-sm text-ink-muted">
+              {disableTarget.email ?? disableTarget.id} will be signed out
+              everywhere and blocked from logging in until you enable them
+              again.
+            </p>
+            <label
+              htmlFor="disable-reason"
+              className="mt-4 block font-label text-xs font-semibold uppercase tracking-wide text-ink-muted"
+            >
+              Reason (shown to the user)
+            </label>
+            <textarea
+              id="disable-reason"
+              value={disableReason}
+              onChange={(e) => setDisableReason(e.target.value)}
+              rows={4}
+              maxLength={500}
+              className="doodle-input mt-1 min-h-[6rem] w-full resize-y"
+              placeholder="Why is this account being disabled?"
+              autoFocus
+            />
+            <div className="mt-4 flex flex-wrap justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="doodle-btn"
+                onClick={() => {
+                  setDisableTarget(null);
+                  setDisableReason('');
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                className="doodle-btn"
+                disabled={busyId === disableTarget.id}
+                onClick={() => void confirmDisable()}
+              >
+                Disable account
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

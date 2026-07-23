@@ -249,6 +249,10 @@ export interface Database {
     };
     Views: Record<string, never>;
     Functions: {
+      admin_revoke_user_sessions: {
+        Args: { target_user_id: string };
+        Returns: undefined;
+      };
       lookup_email_by_username: {
         Args: { p_username: string };
         Returns: string | null;

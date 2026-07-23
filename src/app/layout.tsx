@@ -83,9 +83,9 @@ export const metadata: Metadata = {
     images: [
       {
         url: '/brand/og-outreachos.png',
-        width: 1200,
-        height: 630,
-        alt: 'OutreachOS — personal lead management vault',
+        width: 1024,
+        height: 537,
+        alt: 'OutreachOS — personal lead management vault for cold outreach',
       },
     ],
   },

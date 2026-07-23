@@ -58,12 +58,18 @@ describe('Auth proxy', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockedUpdateSession.mockResolvedValue({
+      user: null,
+      supabaseResponse: NextResponse.next(),
+      supabase: { auth: { signOut: jest.fn() } } as never,
+    });
   });
 
   it('redirects unauthenticated users away from dashboard', async () => {
     mockedUpdateSession.mockResolvedValue({
       user: null,
       supabaseResponse: NextResponse.next(),
+      supabase: { auth: { signOut: jest.fn() } } as never,
     });
 
     const response = await proxy(createRequest('/dashboard'));
@@ -79,6 +85,7 @@ describe('Auth proxy', () => {
     mockedUpdateSession.mockResolvedValue({
       user: null,
       supabaseResponse: NextResponse.next(),
+      supabase: { auth: { signOut: jest.fn().mockResolvedValue({}) } } as never,
     });
 
     const response = await proxy(createRequest('/api/leads'));
@@ -90,8 +97,9 @@ describe('Auth proxy', () => {
 
   it('allows authenticated access to dashboard', async () => {
     mockedUpdateSession.mockResolvedValue({
-      user: { id: 'admin-1' } as never,
+      user: { id: 'admin-1', app_metadata: {} } as never,
       supabaseResponse: NextResponse.next(),
+      supabase: { auth: { signOut: jest.fn().mockResolvedValue({}) } } as never,
     });
 
     const response = await proxy(createRequest('/dashboard'));
@@ -102,10 +110,36 @@ describe('Auth proxy', () => {
     );
   });
 
+  it('signs out disabled users and sends them to the notice page', async () => {
+    const signOut = jest.fn().mockResolvedValue({});
+    mockedUpdateSession.mockResolvedValue({
+      user: {
+        id: 'blocked-1',
+        app_metadata: {
+          account_disabled: true,
+          account_disabled_reason: 'Terms violation',
+        },
+      } as never,
+      supabaseResponse: NextResponse.next(),
+      supabase: { auth: { signOut } } as never,
+    });
+
+    const response = await proxy(createRequest('/dashboard'));
+    expect(response.status).toBe(307);
+    expect(signOut).toHaveBeenCalled();
+    const location =
+      response.headers.get('location') ?? response.headers.get('Location') ?? '';
+    if (location) {
+      expect(location).toContain('/auth/disabled');
+      expect(location).toContain('Terms');
+    }
+  });
+
   it('allows public agent API without session', async () => {
     mockedUpdateSession.mockResolvedValue({
       user: null,
       supabaseResponse: NextResponse.next(),
+      supabase: { auth: { signOut: jest.fn().mockResolvedValue({}) } } as never,
     });
 
     const response = await proxy(createRequest('/api/agent/leads'));
@@ -114,8 +148,9 @@ describe('Auth proxy', () => {
 
   it('redirects authenticated users away from login', async () => {
     mockedUpdateSession.mockResolvedValue({
-      user: { id: 'admin-1' } as never,
+      user: { id: 'admin-1', app_metadata: {}, user_metadata: { username: 'admin' } } as never,
       supabaseResponse: NextResponse.next(),
+      supabase: { auth: { signOut: jest.fn().mockResolvedValue({}) } } as never,
     });
 
     const response = await proxy(createRequest('/auth/login'));
@@ -136,6 +171,7 @@ describe('Auth proxy', () => {
     mockedUpdateSession.mockResolvedValue({
       user: null,
       supabaseResponse: NextResponse.next(),
+      supabase: { auth: { signOut: jest.fn().mockResolvedValue({}) } } as never,
     });
 
     const response = await proxy(createRequest('/admin/login'));
@@ -146,6 +182,7 @@ describe('Auth proxy', () => {
     mockedUpdateSession.mockResolvedValue({
       user: null,
       supabaseResponse: NextResponse.next(),
+      supabase: { auth: { signOut: jest.fn().mockResolvedValue({}) } } as never,
     });
 
     const response = await proxy(createRequest('/admin/management-dashboard'));
@@ -164,6 +201,7 @@ describe('Auth proxy', () => {
     mockedUpdateSession.mockResolvedValue({
       user: null,
       supabaseResponse: NextResponse.next(),
+      supabase: { auth: { signOut: jest.fn().mockResolvedValue({}) } } as never,
     });
 
     const response = await proxy(createRequest('/api/billing/webhook'));

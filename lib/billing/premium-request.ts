@@ -3,12 +3,21 @@ import { APP_NAME, PREMIUM_REQUEST_EMAIL } from '@/lib/brand';
 
 export type PremiumRequestCurrency = 'INR' | 'USD';
 
-export function buildPremiumRequestMailto(input: {
+export type PremiumRequestDraft = {
+  to: string;
+  subject: string;
+  body: string;
+  /** Full text ready to paste into any mail client */
+  copyText: string;
+  mailto: string;
+};
+
+export function buildPremiumRequestDraft(input: {
   currency: PremiumRequestCurrency;
   userEmail: string;
   userId: string;
   username: string;
-}): string {
+}): PremiumRequestDraft {
   const username = input.username.trim().replace(/^@/, '');
   const price =
     input.currency === 'INR'
@@ -32,6 +41,19 @@ export function buildPremiumRequestMailto(input: {
     `@${username}`,
   ].join('\n');
 
+  const to = PREMIUM_REQUEST_EMAIL;
   const params = new URLSearchParams({ subject, body });
-  return `mailto:${PREMIUM_REQUEST_EMAIL}?${params.toString()}`;
+  const mailto = `mailto:${to}?${params.toString()}`;
+  const copyText = [`To: ${to}`, `Subject: ${subject}`, ``, body].join('\n');
+
+  return { to, subject, body, copyText, mailto };
+}
+
+export function buildPremiumRequestMailto(input: {
+  currency: PremiumRequestCurrency;
+  userEmail: string;
+  userId: string;
+  username: string;
+}): string {
+  return buildPremiumRequestDraft(input).mailto;
 }

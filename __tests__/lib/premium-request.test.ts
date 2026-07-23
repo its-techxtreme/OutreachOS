@@ -1,4 +1,7 @@
-import { buildPremiumRequestMailto } from '@/lib/billing/premium-request';
+import {
+  buildPremiumRequestDraft,
+  buildPremiumRequestMailto,
+} from '@/lib/billing/premium-request';
 import { PREMIUM_REQUEST_EMAIL, SUPPORT_EMAIL } from '@/lib/brand';
 
 describe('buildPremiumRequestMailto', () => {
@@ -35,5 +38,31 @@ describe('buildPremiumRequestMailto', () => {
     expect(decoded).toContain('USD');
     expect(decoded).toContain('@rio');
     expect(decoded).not.toContain('@@rio');
+  });
+});
+
+describe('buildPremiumRequestDraft', () => {
+  it('returns copyable to/subject/body fields', () => {
+    const draft = buildPremiumRequestDraft({
+      currency: 'INR',
+      userEmail: 'buyer@example.com',
+      userId: 'user-123',
+      username: 'buyer',
+    });
+
+    expect(draft.to).toBe(PREMIUM_REQUEST_EMAIL);
+    expect(draft.subject).toContain('@buyer');
+    expect(draft.body).toContain('Username: @buyer');
+    expect(draft.copyText).toContain(`To: ${PREMIUM_REQUEST_EMAIL}`);
+    expect(draft.copyText).toContain(`Subject: ${draft.subject}`);
+    expect(draft.copyText).toContain(draft.body);
+    expect(draft.mailto).toBe(
+      buildPremiumRequestMailto({
+        currency: 'INR',
+        userEmail: 'buyer@example.com',
+        userId: 'user-123',
+        username: 'buyer',
+      })
+    );
   });
 });

@@ -59,9 +59,27 @@ export default async function proxy(request: NextRequest) {
   try {
     // Dynamic import avoids top-level await / adapterFn issues in Next.js 16 proxy.
     const { updateSession } = await import('@/lib/supabase/middleware');
-    const { user, supabaseResponse } = await updateSession(request);
+    const { user, supabaseResponse, supabase } = await updateSession(request);
     const response = applySecurityHeaders(supabaseResponse, requestId);
     const ip = getClientIp(request);
+
+    if (user) {
+      const { getAccountDisableState, disabledAccountPath } = await import(
+        '@/lib/auth/account-status'
+      );
+      const disable = getAccountDisableState(user);
+      if (disable.disabled && !pathname.startsWith('/auth/disabled')) {
+        await supabase?.auth.signOut();
+        const notice = NextResponse.redirect(
+          new URL(disabledAccountPath(disable.reason), request.url)
+        );
+        // Clear session cookies from the signed-out response onto the redirect.
+        supabaseResponse.cookies.getAll().forEach((cookie) => {
+          notice.cookies.set(cookie.name, cookie.value);
+        });
+        return applySecurityHeaders(notice, requestId);
+      }
+    }
 
     const isPublicAdminPath = PUBLIC_ADMIN_PATHS.some(
       (path) => pathname === path || pathname.startsWith(`${path}/`)

@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 
 import { ensureDefaultUserRole } from '@/lib/auth/ensure-role';
+import {
+  disabledAccountPath,
+  getAccountDisableState,
+} from '@/lib/auth/account-status';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { userNeedsUsername } from '@/lib/validation/username-schema';
 
@@ -15,6 +19,14 @@ export async function GET(request: Request) {
 
     if (!error) {
       if (data.user) {
+        const disable = getAccountDisableState(data.user);
+        if (disable.disabled) {
+          await supabase.auth.signOut();
+          return NextResponse.redirect(
+            new URL(disabledAccountPath(disable.reason), origin)
+          );
+        }
+
         await ensureDefaultUserRole(data.user);
         const destination = userNeedsUsername(data.user)
           ? '/auth/username'

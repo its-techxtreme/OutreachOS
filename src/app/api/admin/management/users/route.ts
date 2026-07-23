@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { NextResponse } from 'next/server';
 
 import { withApiHeaders } from '@/lib/api-helpers';
+import { getAccountDisableState } from '@/lib/auth/account-status';
 import { requireAdminManagementAccess } from '@/lib/auth/require-admin-management';
 import { RBACService, Role } from '@/lib/auth/rbac';
 import { isActiveSubscriptionStatus } from '@/lib/billing/razorpay';
@@ -62,6 +63,7 @@ export async function GET(request: Request): Promise<NextResponse> {
 
     const items = users.map((user) => {
       const roles = RBACService.getUserRoles(user);
+      const disable = getAccountDisableState(user);
       const sub = subByUser.get(user.id);
       const plan =
         roles.includes(Role.ADMIN) || roles.includes(Role.SUPER_ADMIN)
@@ -88,6 +90,9 @@ export async function GET(request: Request): Promise<NextResponse> {
           : user.app_metadata?.provider
             ? [user.app_metadata.provider]
             : [],
+        disabled: disable.disabled,
+        disabledReason: disable.reason,
+        disabledAt: disable.disabledAt,
         subscription: sub
           ? {
               status: sub.status,
