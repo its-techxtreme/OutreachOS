@@ -4,19 +4,21 @@ Personal lead vault for cold outreach.
 
 Dump contacts in from Excel, filter by niche / country / status, keep call scripts next to the list, and stop losing track of who you already rang. Each account gets its own vault.
 
-| | |
-| --- | --- |
-| **Live** | [https://outreachos.techxtreme.me](https://outreachos.techxtreme.me) |
-| **Portfolio** | [techxtreme.me/work/outreachos](https://techxtreme.me/work/outreachos) |
-| **Repo** | [github.com/its-techxtreme/OutreachOS](https://github.com/its-techxtreme/OutreachOS) |
-| **Studio** | [techxtreme.me](https://techxtreme.me) |
-| **Stardance** | [project page](https://stardance.hackclub.com/projects/33617) |
 
-<p align="center">
-  <img src="docs/readme/01-landing.png" alt="OutreachOS landing page" width="820" />
-</p>
+|               |                                                                                      |
+| ------------- | ------------------------------------------------------------------------------------ |
+| **Live**      | [https://outreachos.techxtreme.me](https://outreachos.techxtreme.me)                 |
+| **Portfolio** | [techxtreme.me/work/outreachos](https://techxtreme.me/work/outreachos)               |
+| **Repo**      | [github.com/its-techxtreme/OutreachOS](https://github.com/its-techxtreme/OutreachOS) |
+| **Studio**    | [techxtreme.me](https://techxtreme.me)                                               |
+| **Stardance** | [project page](https://stardance.hackclub.com/projects/33617)                        |
+
+
+
 
 ---
+
+
 
 ## Try it without cloning
 
@@ -25,77 +27,79 @@ Dump contacts in from Excel, filter by niche / country / status, keep call scrip
 
 Demo is a shared sample vault (about 100 leads). Imports are capped so people don’t trash it. For your own empty vault, use **Start free** or Google sign-in.
 
-<p align="center">
-  <img src="docs/readme/08-login.png" alt="Login with demo button" width="480" />
-</p>
+
 
 ---
 
+
+
 ## What it looks like
 
-Sketchbook UI on purpose — paper texture, doodle borders, sticky notes. Not another purple SaaS dashboard.
+
+
+### Why it looks like a sketchbook
+
+The first UI was… fine. Also painfully generic. A Shipwright review basically told me to stop shipping another lookalike dashboard, so I started hunting for something that could feel creative *and* still work for different ages without looking gimmicky.
+
+I brainstormed for a while and got nowhere useful. Then, while sorting files on my laptop, I dug up my 10th-grade (high school) portfolio. It used this Japanese paper-notebook theme, lined pages, that whole handmade feel. That clicked. A sketchbook wasn’t just “pretty” — paper is how people kept contact notes long before CRMs existed, which fits OutreachOS almost too well: you manage people, numbers, and follow-ups.
+
+So the app leans into paper texture, doodle borders, and sticky notes on purpose. It’s meant to feel like a working notebook, not a stock SaaS template.
 
 ### Demo mode & tutorial
 
-First time you open the demo, Rio walks you through the vault (filters, metrics, scripts, etc). You can skip whenever.
+First time you open the demo, Rio walks you through the vault (filters, metrics, scripts, and so on). Skip whenever you want.
 
-Demo notes:
+A few demo quirks:
 
-- Shared sample data (not a private vault)
+- Shared sample data (not your private vault)
 - Import / write limits so the sample stays usable
 - Tutorial usually shows once unless you clear it locally
 
-<p align="center">
-  <img src="docs/readme/02-demo-tutorial-start.png" alt="Demo tutorial intro with Rio" width="720" />
-</p>
 
-<p align="center">
-  <img src="docs/readme/03-demo-tutorial-step.png" alt="Tutorial highlighting metrics" width="720" />
-</p>
+
+
 
 ### Dashboard + quests
 
 Metrics up top, weekly quest board if you opt in, filters, then the lead list.
 
-<p align="center">
-  <img src="docs/readme/04-dashboard.png" alt="Dashboard with metrics and quest board" width="720" />
-</p>
 
-<p align="center">
-  <img src="docs/readme/07-lead-table.png" alt="Lead table with filters and statuses" width="720" />
-</p>
+
+
 
 ### Vector vault
 
-Niche / country graph when you want the big picture instead of rows.
+Niche / country graph when you want the big picture instead of scrolling rows forever.
 
-<p align="center">
-  <img src="docs/readme/05-vector.png" alt="Vector vault graph view" width="820" />
-</p>
+
 
 ### Sticky call scripts
 
-Call pitch pad that stays open while you dial. Placeholders like `{business}` / `{niche}` / `{location}` / `{phone}` — you say them live. Drag it around, edit, and save your own (general + niche scripts).
+Call pitch pad that stays open while you dial. Placeholders like `{business}` / `{niche}` / `{location}` / `{phone}` — you say them live. Drag it, edit it, save your own (general + niche scripts).
 
-<p align="center">
-  <img src="docs/readme/06-scripts.png" alt="Sticky call scripts panel" width="820" />
-</p>
+
 
 ---
+
+
 
 ## Auth
 
-| Method | Notes |
-| --- | --- |
-| Email + password | Signup → verify email → claim a username |
-| Google | Sign-in; Automatic Linking keeps Google + password as one user when emails match |
-| Demo | Shared sample vault, one-click, no password typing |
-| MFA | Optional TOTP under settings (secrets encrypted at rest with `ENCRYPTION_KEY`) |
-| Admin | Google + allowlisted email → `/admin/management-dashboard` |
 
-Password reset, username claim, and account delete live under `/auth/*` and settings. User passwords go through **Supabase Auth** — OutreachOS does not store plaintext passwords.
+| Method           | Notes                                                                            |
+| ---------------- | -------------------------------------------------------------------------------- |
+| Email + password | Signup → verify email → claim a username                                         |
+| Google           | Sign-in; Automatic Linking keeps Google + password as one user when emails match |
+| Demo             | Shared sample vault, one-click, no password typing                               |
+| MFA              | Optional TOTP under settings (secrets encrypted at rest with `ENCRYPTION_KEY`)   |
+| Admin            | Google + allowlisted email → `/admin/management-dashboard`                       |
+
+
+Password reset, username claim, and account delete live under `/auth/*` and settings. Passwords go through **Supabase Auth** — we don’t keep plaintext passwords around.
 
 ---
+
+
 
 ## What’s in the app
 
@@ -107,13 +111,15 @@ Password reset, username claim, and account delete live under `/auth/*` and sett
 - Vector vault graph
 - Email / password signup, Google sign-in, one-click demo
 - Per-user lead pools (your stuff stays yours)
-- Free vs **Premium** (`/pricing`) — ₹1499 or $15 / month; request via email to `techxtremebuisness@gmail.com` (username included automatically); access granted from the admin dashboard after payment
+- Free vs **Premium** (`/pricing`) — ₹1499 or $15 / month; request via email to `techxtremebuisness@gmail.com` (username included automatically); I grant access from the admin dashboard after payment
 - Public SEO: `/sitemap.xml`, `/robots.txt`, `/llms.txt`
 - Accessibility notice: `/accessibility`
 
-Agent intake (`POST /api/agent/leads` with `X-Agent-Secret`) is parked from an early ChatGPT experiment — not a v1 product feature. The code stays as scaffolding if GPT agent intake returns in v2. Excel import is the supported path today.
+There’s also a parked agent route (`POST /api/agent/leads` + `X-Agent-Secret`) from an early ChatGPT experiment. Not a v1 product feature — left in as scaffolding if GPT agent intake comes back in v2. Excel import is what you should use today.
 
 ---
+
+
 
 ## Stack
 
@@ -127,9 +133,11 @@ Excel import  →  Next.js API  →  Supabase
 
 ---
 
+
+
 ## Local setup
 
-Need Node 18+, a Supabase project, and the usual patience with env vars.
+Need Node 18+, a Supabase project, and a bit of patience with env vars.
 
 ```bash
 git clone https://github.com/its-techxtreme/OutreachOS.git
@@ -138,7 +146,7 @@ npm install
 cp .env.example .env.local
 ```
 
-Fill `.env.local` (see `.env.example`). Important ones:
+Fill `.env.local` from `.env.example`. The important ones:
 
 - `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (server only)
@@ -161,7 +169,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 - Redirect URLs: `/auth/callback`, `/auth/login`, `/auth/reset-password`, `/auth/username`
 - Enable **Automatic Linking** (verified emails) so Google + email/password stay one user
-- If you already have a duplicate Google-only admin user, dry-run then merge:
+- If you already duplicated an admin as Google-only:
 
 ```bash
 node --env-file=.env.local scripts/merge-auth-identities.mjs --dry-run
@@ -171,6 +179,8 @@ node --env-file=.env.local scripts/merge-auth-identities.mjs --email=you@example
 Admin management (Google + allowlisted email only): `/admin/management-dashboard`
 
 ---
+
+
 
 ## Scripts
 
@@ -187,22 +197,28 @@ npm run audit:secrets
 
 ---
 
+
+
 ## Docs
 
-| Doc | What’s in it |
-| --- | --- |
-| [API Spec](./docs/API_SPECIFICATION.md) | Legacy agent endpoint (parked for v2) |
-| [Deployment](./docs/DEPLOYMENT_GUIDE.md) | Vercel / prod notes |
-| [SEO / Search Console](./docs/SEO_SEARCH_CONSOLE.md) | Index `outreachos.techxtreme.me` in Google |
-| [Security](./docs/SECURITY_REQUIREMENTS.md) | Auth expectations |
-| [Architecture](./docs/TECHNICAL_ARCHITECTURE.md) | How pieces fit |
-| [Custom GPT](./docs/chatgpt/CUSTOM_GPT_INSTRUCTIONS.md) | Parked notes for a possible v2 agent |
-| [PRD](./docs/PRODUCT_REQUIREMENTS_DOCUMENT.md) | Early planning notes (product moved on since) |
-| [Accessibility](/accessibility) | Accessibility notice |
 
-Screenshots in this README were taken from the live site (`docs/readme/`).
+| Doc                                                     | What’s in it                                  |
+| ------------------------------------------------------- | --------------------------------------------- |
+| [API Spec](./docs/API_SPECIFICATION.md)                 | Legacy agent endpoint (parked for v2)         |
+| [Deployment](./docs/DEPLOYMENT_GUIDE.md)                | Vercel / prod notes                           |
+| [SEO / Search Console](./docs/SEO_SEARCH_CONSOLE.md)    | Index `outreachos.techxtreme.me` in Google    |
+| [Security](./docs/SECURITY_REQUIREMENTS.md)             | Auth expectations                             |
+| [Architecture](./docs/TECHNICAL_ARCHITECTURE.md)        | How pieces fit                                |
+| [Custom GPT](./docs/chatgpt/CUSTOM_GPT_INSTRUCTIONS.md) | Parked notes for a possible v2 agent          |
+| [PRD](./docs/PRODUCT_REQUIREMENTS_DOCUMENT.md)          | Early planning notes (product moved on since) |
+| [Accessibility](/accessibility)                         | Accessibility notice                          |
+
+
+Screenshots in this README are from the live site (`docs/readme/`).
 
 ---
+
+
 
 ## Security (short version)
 
@@ -210,8 +226,10 @@ Don’t commit `.env.local` or real keys. Service role stays server-side. Passwo
 
 ---
 
+
+
 ## Credits
 
 Built by **Athan** ([Techxtreme](https://techxtreme.me)).
 
-Parts of the code were written with help from [Cursor](https://cursor.com) — scaffolding, tests, and routine glue. Product direction, design decisions, and final review are mine.
+I use [Cursor](https://cursor.com) for a some amount of the coding help — scaffolding, tests, and the boring glue. Product calls, design, and final review are still mine in those cases too.
