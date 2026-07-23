@@ -50,8 +50,25 @@ next-env.d.ts
 .stitch/
 
 # local stardance / community drafts (not product docs)
-docs/DEVLOG*_STARDANCE.md
+docs/DEVLOG*.md
 docs/*_STARDANCE.md
+docs/**/*prompt*
+docs/**/*PROMPT*
+docs/PRODUCT_REQUIREMENTS_DOCUMENT.md
+docs/chatgpt/
+
+# plans, agent scratch, temp build notes
+**/*.plan.md
+**/plans/
+**/prompts/
+**/scratch/
+**/tmp/
+**/.tmp/
+**/temp/
+AGENTS.md
+CLAUDE.md
+.claude/
+.agents/
 
 # debug / agent session logs
 debug-*.log

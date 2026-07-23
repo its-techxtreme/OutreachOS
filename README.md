@@ -202,16 +202,14 @@ npm run audit:secrets
 ## Docs
 
 
-| Doc                                                     | What’s in it                                  |
-| ------------------------------------------------------- | --------------------------------------------- |
-| [API Spec](./docs/API_SPECIFICATION.md)                 | Legacy agent endpoint (parked for v2)         |
-| [Deployment](./docs/DEPLOYMENT_GUIDE.md)                | Vercel / prod notes                           |
-| [SEO / Search Console](./docs/SEO_SEARCH_CONSOLE.md)    | Index `outreachos.techxtreme.me` in Google    |
-| [Security](./docs/SECURITY_REQUIREMENTS.md)             | Auth expectations                             |
-| [Architecture](./docs/TECHNICAL_ARCHITECTURE.md)        | How pieces fit                                |
-| [Custom GPT](./docs/chatgpt/CUSTOM_GPT_INSTRUCTIONS.md) | Parked notes for a possible v2 agent          |
-| [PRD](./docs/PRODUCT_REQUIREMENTS_DOCUMENT.md)          | Early planning notes (product moved on since) |
-| [Accessibility](/accessibility)                         | Accessibility notice                          |
+| Doc                                                  | What’s in it                               |
+| ---------------------------------------------------- | ------------------------------------------ |
+| [API Spec](./docs/API_SPECIFICATION.md)              | Legacy agent endpoint (parked for v2)      |
+| [Deployment](./docs/DEPLOYMENT_GUIDE.md)             | Vercel / prod notes                        |
+| [SEO / Search Console](./docs/SEO_SEARCH_CONSOLE.md) | Index `outreachos.techxtreme.me` in Google |
+| [Security](./docs/SECURITY_REQUIREMENTS.md)          | Auth expectations                          |
+| [Architecture](./docs/TECHNICAL_ARCHITECTURE.md)     | How pieces fit                             |
+| [Accessibility](/accessibility)                      | Accessibility notice                       |
 
 
 Screenshots in this README are from the live site (`docs/readme/`).
